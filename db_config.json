@@ -1,0 +1,7 @@
+{
+  "host": "cy1.iptime.org",
+  "user": "root",
+  "password": "3306",
+  "database": "mydb",
+  "connectionLimit": 30
+}
