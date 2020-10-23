@@ -1,22 +1,41 @@
 const express = require('express');
 const app = express();
 
-/*app.get('/se', (req, res) => {
-  var db = require('./dbConnector.js');
-
-  var str = db.select((results) =>{
-    console.log(results);
-    res.json(results);
-  });
-});*/
-
 var manager = require('./manager.js');
 
 app.use('/se', manager.useTest);
 app.use('/test', manager.getJsonData);
 
+app.use('/reqSearchRecipe', manager.reqSearchRecipe);
+app.use('/reqBsetRecipe', manager.reqBestRecipe);
+app.use('/readUserRecipe', manager.readUserRecipe);
+
+app.use('/createComment', manager.createComment);
+app.use('/deleteComment', manager.deleteComment);
+app.use('/readComment', manager.readComment);
+
+app.use('/createLikeIn', manager.createLikeIn);
+app.use('/createLikeOut', manager.createLikeOut);
+app.use('/deleteLikeIn', manager.deleteLikeIn);
+app.use('/deleteLikeOut', manager.deleteLikeOut);
+app.use('/readLikeIn', manager.readLikeIn);
+app.use('/readLikeOut', manager.readLikeOut);
+
 app.use('/signUp', manager.signUp);
 app.use('/login', manager.login);
+app.use('/deleteUser', manager.deleteUser);
+app.use('/updateUser', manager.updateUser);
+
+app.use('/createRecipe', manager.createRecipe);
+app.use('/readRecipe', manager.updateRecipe);
+app.use('/readRecipe', manager.deleteRecipe);
+app.use('/readRecipe', manager.readRecipe);
+
+app.use('/updateSetting', manager.updateSetting);
+
+app.use('/readIngOutRecipe', manager.readIngOutRecipe);
+app.use('/readFoodOutRecipe', manager.readFoodOutRecipe);
+app.use('/readIngPrice', manager.readIngPrice);
 
 app.listen(3000, () => {
   console.log('Example app listening on port 3000!');
