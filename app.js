@@ -26,8 +26,8 @@ app.use('/deleteUser', manager.deleteUser);
 app.use('/updateUser', manager.updateUser);
 
 app.use('/createRecipe', manager.createRecipe);
-app.use('/readRecipe', manager.updateRecipe);
-app.use('/readRecipe', manager.deleteRecipe);
+app.use('/updateRecipe', manager.updateRecipe);
+app.use('/deleteRecipe', manager.deleteRecipe);
 app.use('/readRecipe', manager.readRecipe);
 
 app.use('/updateSetting', manager.updateSetting);
