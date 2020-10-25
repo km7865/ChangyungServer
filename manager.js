@@ -238,7 +238,7 @@ exports.signUp = function (req, res) {
             if(results == 1){
                 db.signUpUser(inputData.userId, inputData.pw, (results2) => {
                     console.log(results2);
-                    res.write(result2);
+                    res.write(results2);
                     res.end();
                 });
             }
