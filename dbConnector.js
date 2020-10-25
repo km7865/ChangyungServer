@@ -176,7 +176,7 @@ exports.updateRecipe = function (recipeInId, title, ingredient, ingredientUnit,
 exports.deleteRecipe = function (recipeInId, callback) {
     pool.getConnection(function (err, conn) {
         if (!err) {
-            var sql = "DELETE FROM recipeIn WHERE recipeInId = ?";
+            var sql = "DELETE FROM mydb.recipeIn WHERE recipeInId = ?";
             var values = [recipeInId];
             conn.query(sql, values, function (err, results, fields) {
                 if (err) {
@@ -214,7 +214,6 @@ exports.readRecipe = function (callback) {
     pool.getConnection(function (err, conn) {
         if (!err) {
             var sql = "SELECT * FROM mydb.recipeIn";
-            // var values = [recipeId];
             conn.query(sql, function (err, results, fields) {
                 if (err) {
                     console.log(err);
