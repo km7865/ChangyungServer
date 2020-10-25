@@ -7,42 +7,42 @@ exports.useTest = function (req, res) {
     });
 };
 
-exports.getTest = function (req, res) {
-    var str = db.select((results) =>{
-        console.log(results);
-        res.json(results);
-    });
-};
-
-exports.postTest = function (req, res) {
-    var user_id = req.body.user_id,
-        password = req.body.password;
-
-    console.log(user_id);
-    console.log(password);
-};
-
-exports.putTest = function (req, res) {
-    var user_id = req.body.user_id,
-        password = req.body.password;
-
-    console.log(user_id);
-    console.log(password);
-};
-
-exports.getJsonData = function (req, res) {
-    console.log('who get in here post /users');
-    var inputData;
-    req.on('data', (data) => {
-        inputData = JSON.parse(data);
-    });
-    req.on('end', () => {
-        console.log("user_id : "+inputData.user_id + " , name : "+inputData.name);
-        // console.log(inputData.user_id);
-    });
-    res.write("OK!");
-    res.end();
-}
+// exports.getTest = function (req, res) {
+//     var str = db.select((results) =>{
+//         console.log(results);
+//         res.json(results);
+//     });
+// };
+//
+// exports.postTest = function (req, res) {
+//     var user_id = req.body.user_id,
+//         password = req.body.password;
+//
+//     console.log(user_id);
+//     console.log(password);
+// };
+//
+// exports.putTest = function (req, res) {
+//     var user_id = req.body.user_id,
+//         password = req.body.password;
+//
+//     console.log(user_id);
+//     console.log(password);
+// };
+//
+// exports.getJsonData = function (req, res) {
+//     console.log('who get in here post /users');
+//     var inputData;
+//     req.on('data', (data) => {
+//         inputData = JSON.parse(data);
+//     });
+//     req.on('end', () => {
+//         console.log("user_id : "+inputData.user_id + " , name : "+inputData.name);
+//         // console.log(inputData.user_id);
+//     });
+//     res.write("OK!");
+//     res.end();
+// }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -56,27 +56,113 @@ exports.readUserRecipe = function (req, res) {
 }
 
 exports.createComment = function (req, res) {
+    console.log('who get in here post /createComment');
+    var inputData;
+
+    req.on('data', (data) => {
+        inputData = JSON.parse(data);
+    });
+
+    req.on('end', () => {
+        //inputData = req.query
+        db.createComment(inputData.recipeInId, inputData.userId, inputData.content, inputData.uploadDate, (results) => {
+            console.log(results); // 1 : 성공, 2 : 실패, 3 : 중복
+                res.write(results);
+                res.end();
+        });
+    });
 }
 
 exports.deleteComment = function (req, res) {
+    console.log('who get in here post /deleteComment');
+    var inputData;
+
+    req.on('data', (data) => {
+        inputData = JSON.parse(data);
+    });
+
+    req.on('end', () => {
+        db.deleteComment(inputData.commentId, (results) => {
+            console.log(results);   // 1 : 성공, 2 : 실패
+                res.write(results);
+                res.end();
+        });
+    });
 }
 
 exports.readComment = function (req, res) {
+    console.log('who get in here post /readComment');
+    var inputData;
+
+    req.on('data', (data) => {
+        inputData = JSON.parse(data);
+    });
+
+    req.on('end', () => {
+        db.getComment(inputData.recipeInId, (results) => {
+            console.log(results); // 1 : 댓글 데이터, 2 : 실패
+            res.write(results);
+            res.end();
+        });
+    });
 }
 
 exports.createLikeIn = function (req, res) {
+    console.log('who get in here post /createLikeIn');
+    var inputData;
+
+    req.on('data', (data) => {
+        inputData = JSON.parse(data);
+    });
+
+    req.on('end', () => {
+        //inputData = req.query
+        db.createLikeIn(inputData.recipeInId, inputData.userId, (results) => {
+            console.log(results); // 1 : 성공, 2 : 실패
+            res.write(results);
+            res.end();
+        });
+    });
 }
 
 exports.createLikeOut = function (req, res) {
 }
 
 exports.deleteLikeIn = function (req, res) {
+    console.log('who get in here post /deleteComment');
+    var inputData;
+
+    req.on('data', (data) => {
+        inputData = JSON.parse(data);
+    });
+
+    req.on('end', () => {
+        db.deleteLikeIn(inputData.recipeInId, inputData.userId, (results) => {
+            console.log(results);   // 1 : 성공, 2 : 실패
+            res.write(results);
+            res.end();
+        });
+    });
 }
 
 exports.deleteLikeOut = function (req, res) {
 }
 
 exports.readLikeIn = function (req, res) {
+    console.log('who get in here post /readComment');
+    var inputData;
+
+    req.on('data', (data) => {
+        inputData = JSON.parse(data);
+    });
+
+    req.on('end', () => {
+        db.getLikeIn(inputData.recipeInId, inputData.userId, (results) => {
+            console.log(results); // 1 : 좋아요 한 상태, 2 : 실패, 3 : 좋아요 안 한 상태
+            res.write(results);
+            res.end();
+        });
+    });
 }
 
 exports.readLikeOut = function (req, res) {
@@ -85,7 +171,6 @@ exports.readLikeOut = function (req, res) {
 exports.login = function (req, res) {
     console.log('who get in here post /login');
     var inputData;
-    var write = "";
 
     req.on('data', (data) => {
         inputData = JSON.parse(data);
@@ -99,8 +184,6 @@ exports.login = function (req, res) {
             res.write(results);
             res.end();
         });
-        res.write("ok");
-        res.end();
     });
 }
 
@@ -118,23 +201,16 @@ exports.signUp = function (req, res) {
 
         db.checkID(inputData.id, inputData.pw, (results) => {
             console.log(results);
-            if (results == "error") {
-                res.write(results);
-                res.end();
-            } else if (results == "중복") {
-                res.write(results);
-                res.end();
-            } else {
-                db.signUpUser(inputData.id, inputData.pw, (results) => {
-                    console.log(results);
-                    if (results == "error") {
-                        res.write(results);
-                        res.end();
-                    } else {
-                        res.write(results);
-                        res.end();
-                    }
+            if(results == 1){
+                db.signUpUser(inputData.id, inputData.pw, (results2) => {
+                    console.log(results2);
+                    res.write(result2);
+                    res.end();
                 });
+            }
+            else{
+                res.write(results);
+                res.end();
             }
         });
     });
@@ -226,4 +302,27 @@ exports.readFoodOutRecipe = function (req, res) {
 }
 
 exports.readIngPrice = function (req, res) {
+}
+
+exports.readUserComment = function (req, res) {
+    console.log('who get in here post /readUserComment');
+    var inputData;
+
+    req.on('data', (data) => {
+        inputData = JSON.parse(data);
+    });
+
+    req.on('end', () => {
+        db.getUserComment(inputData.userId, (results) => {
+            console.log(results); // 1 : 댓글 데이터, 2 : 실패
+            res.write(results);
+            res.end();
+        });
+    });
+}
+
+exports.readUserLikeIn = function (req, res) {
+}
+
+exports.readUserLikeOut = function (req, res) {
 }

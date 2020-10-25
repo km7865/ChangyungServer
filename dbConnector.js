@@ -5,11 +5,11 @@ let pool = mysql.createPool(config);
 exports.select = function(callback) {
     pool.getConnection(function (err, conn) {
         if(!err) {
-            conn.query('SELECT * FROM board', function(err, results, fields) {
+            conn.query('SELECT * FROM mydb.user', function(err, results, fields) {
                 if (err) {
                     console.log(err);
                 }
-                callback(results);
+                callback(results[0].userId);
             });
         }
         conn.release();
@@ -25,15 +25,15 @@ exports.checkID = function(id, pw, callback) {
             conn.query(sql, values, function(err, results, fields) {
                 if (err) {
                     console.log(err);
-                    callback("error")
+                    callback(2)
                 }
 
                 var len = results.length
 
                 if(len == 0)
-                    callback("ok")
+                    callback(1)
                 else
-                    callback("중복")
+                    callback(3)
             });
         }
         conn.release();
@@ -49,10 +49,10 @@ exports.signUpUser = function(id, pw, callback) {
             conn.query(sql, values, function(err, results, fields) {
                 if (err) {
                     console.log(err);
-                    callback("error")
+                    callback(2)
                 }
                 else
-                    callback("ok");
+                    callback(1);
             });
         }
         conn.release();
@@ -67,18 +67,158 @@ exports.checkLogin = function(id, pw, callback) {
             conn.query(sql, values, function(err, results, fields) {
                 if (err) {
                     console.log(err);
-                    callback("error")
+                    callback(2)
                 }
 
                 var len = results.length
 
                 if(len != 0)
-                    callback("ok")
+                    callback(1)
                 else
-                    callback("wrong")
+                    callback(2)
             });
         }
         conn.release();
     });
 }
 
+exports.createComment = function(recipeInId, userId, content, uploadDate, callback) {
+    pool.getConnection(function (err, conn) {
+        if(!err) {
+            var sql = "insert into mydb.recipecomment(recipeInId, userId, content, uploadDate) " +
+                "value(?, ?, ?, ?)"
+            var values = [recipeInId, userId, content, uploadDate]
+            conn.query(sql, values, function(err, results, fields) {
+                if (err) {
+                    console.log(err);
+                    callback(2)
+                }
+                console.log("ok");
+                callback(1)
+            });
+        }
+        conn.release();
+    });
+}
+
+exports.deleteComment = function(commentId, callback){
+    pool.getConnection(function (err, conn) {
+        if(!err) {
+            var sql = "delete from mydb.recipecomment where commentId=?"
+            var values = [commentId]
+            conn.query(sql, values, function(err, results, fields) {
+                if (err) {
+                    console.log(err);
+                    callback(2)
+                }
+                console.log("ok");
+                callback(1)
+            });
+        }
+        conn.release();
+    });
+}
+
+exports.getComment = function(recipeInId, callback){
+    pool.getConnection(function (err, conn) {
+        if(!err) {
+            var sql = "select * from mydb.recipecomment where recipeInId=?"
+            var values = [recipeInId]
+            conn.query(sql, values, function(err, results, fields) {
+                if (err) {
+                    console.log(err);
+                    callback(2)
+                }
+                console.log("ok");
+                callback(results)
+            });
+        }
+        conn.release();
+    });
+}
+
+exports.createLikeIn = function(recipeInId, userId, callback){
+    pool.getConnection(function (err, conn) {
+        if(!err) {
+            var sql = "insert into mydb.likein(recipeInId, userId) " +
+                "value(?, ?)"
+            var values = [recipeInId, userId]
+            conn.query(sql, values, function(err, results, fields) {
+                if (err) {
+                    console.log(err);
+                    callback(2)
+                }
+                console.log("ok");
+                callback(1)
+            });
+        }
+        conn.release();
+    });
+}
+
+exports.deleteLikeIn = function(recipeInId, userId, callback){
+    pool.getConnection(function (err, conn) {
+        if(!err) {
+            var sql = "delete from mydb.likein where recipeInId=? and userId=?"
+            var values = [recipeInId, userId]
+            conn.query(sql, values, function(err, results, fields) {
+                if (err) {
+                    console.log(err);
+                    callback(2)
+                }
+                console.log("ok");
+                callback(1)
+            });
+        }
+        conn.release();
+    });
+}
+
+exports.getLikeIn = function(){
+    pool.getConnection(function (err, conn) {
+        if(!err) {
+            var sql = "select * from mydb.likein where recipeInId=? and userId=?"
+            var values = [recipeInId, userId]
+            conn.query(sql, values, function(err, results, fields) {
+                if (err) {
+                    console.log(err);
+                    callback(2)
+                }
+
+                var len = results.length
+
+                if(len == 0)
+                    callback(3)
+                else
+                    callback(1)
+            });
+        }
+        conn.release();
+    });
+}
+
+exports.getUserComment = function(userId, callback){
+    pool.getConnection(function (err, conn) {
+        if(!err) {
+            var sql = "SELECT recipecomment.commentId, recipein.title, recipecomment.userId, " +
+                "recipecomment.content, recipecomment.uploadDate " +
+                "FROM mydb.recipecomment, mydb.recipein where userId=?"
+            var values = [userId]
+            conn.query(sql, values, function(err, results, fields) {
+                if (err) {
+                    console.log(err);
+                    callback(2)
+                }
+                console.log("ok");
+                callback(results)
+            });
+        }
+        conn.release();
+    });
+}
+
+exports.getUserLikeIn = function(userId, callback){
+}
+
+exports.getUserLikeOut = function(userId, callback){
+}
