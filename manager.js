@@ -210,9 +210,9 @@ exports.login = function (req, res) {
     });
 
     req.on('end', () => {
-        console.log("id : "+inputData.id + " , pw : "+inputData.pw);
+        console.log("id : "+inputData.userId + " , pw : "+inputData.pw);
 
-        db.checkLogin(inputData.id, inputData.pw, (results) =>{
+        db.checkLogin(inputData.userId, inputData.pw, (results) =>{
             console.log(results);
             res.write(results);
             res.end();
@@ -231,12 +231,12 @@ exports.signUp = function (req, res) {
     });
 
     req.on('end', () => {
-        console.log("id : " + inputData.id + " , pw : " + inputData.pw);
+        console.log("id : " + inputData.userId + " , pw : " + inputData.pw);
 
-        db.checkID(inputData.id, inputData.pw, (results) => {
+        db.checkID(inputData.userId, inputData.pw, (results) => {
             console.log(results);
             if(results == 1){
-                db.signUpUser(inputData.id, inputData.pw, (results2) => {
+                db.signUpUser(inputData.userId, inputData.pw, (results2) => {
                     console.log(results2);
                     res.write(result2);
                     res.end();
