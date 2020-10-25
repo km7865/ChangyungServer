@@ -366,7 +366,7 @@ exports.getUserComment = function(userId, callback){
         if(!err) {
             var sql = "SELECT recipecomment.commentId, recipein.title, recipecomment.userId, " +
                 "recipecomment.content, recipecomment.uploadDate " +
-                "FROM mydb.recipecomment, mydb.recipein where userId=?"
+                "FROM mydb.recipecomment, mydb.recipein where recipecomment.userId=?"
             var values = [userId]
             conn.query(sql, values, function(err, results, fields) {
                 if (err) {
