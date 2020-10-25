@@ -213,7 +213,7 @@ exports.readImgPath = function (recipeInId, callback) {
 exports.readRecipe = function (callback) {
     pool.getConnection(function (err, conn) {
         if (!err) {
-            var sql = "SELECT * FROM recipeIn";
+            var sql = "SELECT * FROM mydb.recipeIn";
             // var values = [recipeId];
             conn.query(sql, function (err, results, fields) {
                 if (err) {
@@ -231,9 +231,9 @@ exports.readRecipe = function (callback) {
 exports.readUserRecipe = function (userId, callback) {
     pool.getConnection(function (err, conn) {
         if (!err) {
-            var sql = "SELECT * FROM recipeIn WHERE userId = ?";
-            var values = [recipeId];
-            conn.query(sql, function (err, results, fields) {
+            var sql = "SELECT * FROM mydb.recipeIn WHERE userId = ?";
+            var values = [userId];
+            conn.query(sql, values, function (err, results, fields) {
                 if (err) {
                     console.log(err);
                     callback("2");

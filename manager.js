@@ -64,13 +64,14 @@ exports.readUserRecipe = function (req, res) {
     req.on('end', () => {
         var fs = require('fs'); //File System 모듈 불러오기
 
-        db.readRecipe(inputData.userId, (results) => {
+        db.readUserRecipe(inputData.userId, (results) => {
             if (results == 2) {
                 res.write(results);
             } else {
                 var recipeArr = results;
                 var recipeImageBytes = [];
                 for (var i = 0; i < recipeArr.length; i++) {
+                    recipeImageBytes = [];
                     var imgPaths = recipeArr[i]["imgPath"].split('`');
                     for (var j = 0; j < imgPaths.length; j++) {
                         var imgPath = new Object();
