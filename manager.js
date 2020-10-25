@@ -52,7 +52,39 @@ exports.reqSearchRecipe = function (req, res) {
 exports.reqBestRecipe = function (req, res) {
 }
 
+// 내가 등록한 레시피 조회
 exports.readUserRecipe = function (req, res) {
+    console.log('who get in here post /readUserRecipe');
+    var inputData;
+
+    req.on('data', (data) => {
+        inputData = JSON.parse(data);
+    });
+
+    req.on('end', () => {
+        var fs = require('fs'); //File System 모듈 불러오기
+
+        db.readRecipe(inputData.userId, (results) => {
+            if (results == 2) {
+                res.write(results);
+            } else {
+                var recipeArr = results;
+                var recipeImageBytes = [];
+                for (var i = 0; i < recipeArr.length; i++) {
+                    var imgPaths = recipeArr[i]["imgPath"].split('`');
+                    for (var j = 0; j < imgPaths.length; j++) {
+                        var imgPath = new Object();
+                        imgPath.recipeImageByte = fs.readFileSync(imgPaths[j], 'base64');
+                        recipeImageBytes.push(imgPath);
+                    }
+                    recipeArr[i].recipeImageBytes = recipeImageBytes;
+                    delete recipeArr[i].imgPath;
+                }
+                res.write(JSON.stringify(recipeArr));
+            }
+            res.end();
+        });
+    });
 }
 
 exports.createComment = function (req, res) {
@@ -168,6 +200,7 @@ exports.readLikeIn = function (req, res) {
 exports.readLikeOut = function (req, res) {
 }
 
+// 로그인
 exports.login = function (req, res) {
     console.log('who get in here post /login');
     var inputData;
@@ -187,6 +220,7 @@ exports.login = function (req, res) {
     });
 }
 
+// 회원 정보 등록 (회원가입)
 exports.signUp = function (req, res) {
     console.log('who get in here post /signUp');
     var inputData;
@@ -340,7 +374,7 @@ exports.updateRecipe = function (req, res) {
     });
 }
 
-// 레시
+// 레시피 삭제
 exports.deleteRecipe = function (req, res) {
     console.log('who get in here post /deleteRecipe');
     var inputData;
@@ -416,6 +450,7 @@ exports.readFoodOutRecipe = function (req, res) {
 exports.readIngPrice = function (req, res) {
 }
 
+// 내가 쓴 댓글 조회
 exports.readUserComment = function (req, res) {
     console.log('who get in here post /readUserComment');
     var inputData;
@@ -433,8 +468,10 @@ exports.readUserComment = function (req, res) {
     });
 }
 
+// 내가 좋아요한 내부 레시피 조회
 exports.readUserLikeIn = function (req, res) {
 }
 
+// 내가 좋아요한 외부 레시피 조회
 exports.readUserLikeOut = function (req, res) {
 }
