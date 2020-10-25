@@ -82,6 +82,172 @@ exports.checkLogin = function(id, pw, callback) {
     });
 }
 
+exports.deleteUser = function (id, callback) {
+    pool.getConnection(function (err, conn) {
+        if (!err) {
+            var sql = "DELETE FROM mydb.user WHERE userId=?";
+            var values = [id];
+            conn.query(sql, values, function (err, results, fields) {
+                if (err) {
+                    console.log(err);
+                    callback("2")
+                } else callback("1")
+            });
+        }
+        conn.release();
+    });
+}
+
+exports.updateUser = function (id, pw, callback) {
+    pool.getConnection(function (err, conn) {
+        if (!err) {
+            var sql = "UPDATE mydb.user SET pw = ? WHERE userId = ?";
+            var values = [pw, id];
+            conn.query(sql, values, function (err, results, fields) {
+                if (err) {
+                    console.log(err);
+                    callback("2")
+                } else callback("1")
+            });
+        }
+        conn.release();
+    });
+}
+
+exports.createRecipe = function (userId, title, ingredient, ingredientUnit,
+                                 recipePerson, recipeTime, contents, callback) {
+    pool.getConnection(function (err, conn) {
+        if (!err) {
+            var sql = "INSERT INTO mydb.recipeIn(userId, title, ingredient, ingredientUnit, recipePerson, recipeTime, contents, imgPath, commentCount, likeCount) "
+                + "VALUES(?, ?, ?, ?, ?, ?, ?, '.', 0, 0)";
+            var values = [userId, title, ingredient, ingredientUnit, recipePerson, recipeTime, contents];
+
+            conn.query(sql, values, function (err, results, fields) {
+                if (err) {
+                    console.log(err);
+                    callback("2");
+                } else {
+                    conn.query("select LAST_INSERT_ID();", function (err, results, fields) {
+                        callback(results[0]["LAST_INSERT_ID()"]);
+                    });
+                }
+            });
+        }
+        conn.release();
+    });
+}
+
+exports.updateImgPath = function (recipeInId, imgPath, callback) {
+    pool.getConnection(function (err, conn) {
+        if (!err) {
+            var sql = "UPDATE mydb.recipeIn SET imgPath = ? WHERE recipeInId = ?";
+            var values = [imgPath, recipeInId];
+            conn.query(sql, values, function (err, results, fields) {
+                if (err) {
+                    console.log(err);
+                    callback("2")
+                } else callback("1")
+            });
+        }
+        conn.release();
+    });
+}
+
+exports.updateRecipe = function (recipeInId, title, ingredient, ingredientUnit,
+                                 recipePerson, recipeTime, contents, imgPath, callback) {
+    pool.getConnection(function (err, conn) {
+        if (!err) {
+            var sql = "UPDATE mydb.recipeIn SET title = ?, ingredient = ?, ingredientUnit = ?, " +
+             "recipePerson = ?, recipeTime = ?, contents = ?, imgPath = ? WHERE recipeInId = ?";
+            var values = [title, ingredient, ingredientUnit, recipePerson, recipeTime, contents, imgPath, recipeInId];
+
+            conn.query(sql, values, function (err, results, fields) {
+                if (err) {
+                    console.log(err);
+                    callback("2");
+                } else {
+                    callback("1");
+                }
+            });
+        }
+        conn.release();
+    });
+}
+
+exports.deleteRecipe = function (recipeInId, callback) {
+    pool.getConnection(function (err, conn) {
+        if (!err) {
+            var sql = "DELETE FROM recipeIn WHERE recipeInId = ?";
+            var values = [recipeInId];
+            conn.query(sql, values, function (err, results, fields) {
+                if (err) {
+                    console.log(err);
+                    callback("2");
+                } else {
+                    callback("1");
+                }
+            });
+        }
+        conn.release();
+    });
+}
+
+// 이미지 경로 읽기
+exports.readImgPath = function (recipeInId, callback) {
+    pool.getConnection(function (err, conn) {
+        if (!err) {
+            var sql = "SELECT imgPath FROM mydb.recipeIn WHERE recipeInId = ?";
+            var values = [recipeInId];
+            conn.query(sql, values, function (err, results, fields) {
+                if (err) {
+                    console.log(err);
+                    callback("2");
+                } else {
+                    callback(results[0]);
+                }
+            });
+        }
+        conn.release();
+    });
+}
+
+exports.readRecipe = function (callback) {
+    pool.getConnection(function (err, conn) {
+        if (!err) {
+            var sql = "SELECT * FROM recipeIn";
+            // var values = [recipeId];
+            conn.query(sql, function (err, results, fields) {
+                if (err) {
+                    console.log(err);
+                    callback("2");
+                } else {
+                    callback(results);
+                }
+            });
+        }
+        conn.release();
+    });
+}
+
+exports.readUserRecipe = function (userId, callback) {
+    pool.getConnection(function (err, conn) {
+        if (!err) {
+            var sql = "SELECT * FROM recipeIn WHERE userId = ?";
+            var values = [recipeId];
+            conn.query(sql, function (err, results, fields) {
+                if (err) {
+                    console.log(err);
+                    callback("2");
+                } else {
+                    callback(results);
+                }
+            });
+        }
+        conn.release();
+    });
+}
+
+
 exports.createComment = function(recipeInId, userId, content, uploadDate, callback) {
     pool.getConnection(function (err, conn) {
         if(!err) {
