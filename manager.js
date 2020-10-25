@@ -411,8 +411,6 @@ exports.readRecipe = function (req, res) {
     });
 
     req.on('end', () => {
-        console.log(inputData.type);
-
         var fs = require('fs'); //File System 모듈 불러오기
 
         db.readRecipe((results) => {
@@ -421,17 +419,19 @@ exports.readRecipe = function (req, res) {
             } else {
                 var recipeArr = results;
                 var recipeImageBytes = [];
-                for (var i = 0; i < recipeArr.length; i++) {
+                for (var i = 0; i < recipeArr.length; i++) { //1레시피 2레시피
                     var imgPaths = recipeArr[i]["imgPath"].split('`');
-                    for (var j = 0; j < imgPaths.length; j++) {
+                    recipeImageBytes = [];
+                    for (var j = 0; j < imgPaths.length; j++) { //레시피의 이미지 경로수만큼
                         var imgPath = new Object();
                         imgPath.recipeImageByte = fs.readFileSync(imgPaths[j], 'base64');
                         recipeImageBytes.push(imgPath);
                     }
-                    recipeArr[i].recipeImageBytes = recipeImageBytes;
+                    recipeArr[i]["recipeImageBytes"] = recipeImageBytes;
                     delete recipeArr[i].imgPath;
                 }
                 res.write(JSON.stringify(recipeArr));
+                console.log("read complete!");
             }
             res.end();
         });
