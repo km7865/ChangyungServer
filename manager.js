@@ -133,7 +133,7 @@ exports.readComment = function (req, res) {
 
     req.on('end', () => {
         db.getComment(inputData.recipeInId, (results) => {
-            console.log(results); // 1 : 댓글 데이터, 2 : 실패
+            console.log(JSON.stringify(results)); // 1 : 댓글 데이터, 2 : 실패
             res.write(results);
             res.end();
         });

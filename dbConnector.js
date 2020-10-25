@@ -364,10 +364,10 @@ exports.getLikeIn = function(){
 exports.getUserComment = function(userId, callback){
     pool.getConnection(function (err, conn) {
         if(!err) {
-            var sql = "SELECT recipecomment.commentId, recipein.title, recipecomment.userId, " +
-                "recipecomment.content, recipecomment.uploadDate " +
-                "FROM mydb.recipecomment, mydb.recipein where recipecomment.userId=? " +
-                "and recipein.recipeInId = recipecomment.recipeInId"
+            var sql = "SELECT recipecomment.commentId, recipein.recipeInId, recipein.title, " +
+                "recipecomment.userId, recipecomment.content, recipecomment.uploadDate, " +
+                "recipein.imgPath FROM mydb.recipecomment, mydb.recipein " +
+                "where recipecomment.userId=? and recipein.recipeInId = recipecomment.recipeInId"
             var values = [userId]
             conn.query(sql, values, function(err, results, fields) {
                 if (err) {
