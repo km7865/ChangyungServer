@@ -36,6 +36,10 @@ app.use('/readIngOutRecipe', manager.readIngOutRecipe);
 app.use('/readFoodOutRecipe', manager.readFoodOutRecipe);
 app.use('/readIngPrice', manager.readIngPrice);
 
+app.use('/readUserComment', manager.readUserComment);
+app.use('/readUserLikeIn', manager.readUserLikeIn);
+app.use('/readUserLikeOut', manager.readUserLikeOut);
+
 app.listen(3000, () => {
   console.log('Example app listening on port 3000!');
 });
