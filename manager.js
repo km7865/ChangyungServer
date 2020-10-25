@@ -463,8 +463,25 @@ exports.readUserComment = function (req, res) {
     req.on('end', () => {
         db.getUserComment(inputData.userId, (results) => {
             console.log(results); // 1 : 댓글 데이터, 2 : 실패
-            res.write(JSON.stringify(results));
-            res.end();
+            if (results == 2) {
+                res.write(results);
+                res.end();
+            } else {
+                var commentArr = results;
+                var recipeImageBytes = [];
+                for (var i = 0; i < commentArr.length; i++) {
+                    recipeImageBytes = [];
+                    var imgPaths = commentArr[i]["imgPath"].split('`');
+                    var imgPath = new Object();
+                    imgPath.recipeImageByte = fs.readFileSync(imgPaths[0], 'base64');
+                    recipeImageBytes.push(imgPath);
+
+                    commentArr[i].recipeImageBytes = recipeImageBytes;
+                    delete commentArr[i].imgPath;
+                }
+                res.write(JSON.stringify(commentArr));
+                res.end();
+            }
         });
     });
 }
