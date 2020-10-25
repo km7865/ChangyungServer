@@ -17,23 +17,23 @@ exports.select = function(callback) {
 }
 
 //callback 매개변수는 항상 마지막에
-exports.checkID = function(id, pw, callback) {
+exports.checkID = function(userId, pw, callback) {
     pool.getConnection(function (err, conn) {
         if(!err) {
-            var sql = "select id from mydb.user where id=?"
-            var values = [id]
+            var sql = "select userId from mydb.user where userId=?"
+            var values = [userId]
             conn.query(sql, values, function(err, results, fields) {
                 if (err) {
                     console.log(err);
-                    callback(2)
+                    callback("2")
                 }
 
                 var len = results.length
 
                 if(len == 0)
-                    callback(1)
+                    callback("1")
                 else
-                    callback(3)
+                    callback("3")
             });
         }
         conn.release();
@@ -41,52 +41,51 @@ exports.checkID = function(id, pw, callback) {
 }
 
 //callback 매개변수는 항상 마지막에
-exports.signUpUser = function(id, pw, callback) {
+exports.signUpUser = function (userId, pw, callback) {
     pool.getConnection(function (err, conn) {
-        if(!err) {
-            var sql = "insert into mydb.user(id, pw) values(?, ?)"
-            var values = [id, pw]
-            conn.query(sql, values, function(err, results, fields) {
+        if (!err) {
+            var sql = "insert into mydb.user(userId, pw) values(?, ?)"
+            var values = [userId, pw]
+            conn.query(sql, values, function (err, results, fields) {
                 if (err) {
                     console.log(err);
-                    callback(2)
-                }
-                else
-                    callback(1);
+                    callback("2")
+                } else
+                    callback("1");
             });
         }
         conn.release();
     });
 }
 
-exports.checkLogin = function(id, pw, callback) {
+exports.checkLogin = function (userId, pw, callback) {
     pool.getConnection(function (err, conn) {
-        if(!err) {
-            var sql = "select id from mydb.user where id=? and pw=?"
-            var values = [id, pw]
-            conn.query(sql, values, function(err, results, fields) {
+        if (!err) {
+            var sql = "select userId from mydb.user where userId=? and pw=?"
+            var values = [userId, pw]
+            conn.query(sql, values, function (err, results, fields) {
                 if (err) {
                     console.log(err);
-                    callback(2)
+                    callback("2")
                 }
 
-                var len = results.length
+                var len = results.length;
 
-                if(len != 0)
-                    callback(1)
+                if (len != 0)
+                    callback("1")
                 else
-                    callback(2)
+                    callback("2")
             });
         }
         conn.release();
     });
 }
 
-exports.deleteUser = function (id, callback) {
+exports.deleteUser = function (userId, callback) {
     pool.getConnection(function (err, conn) {
         if (!err) {
             var sql = "DELETE FROM mydb.user WHERE userId=?";
-            var values = [id];
+            var values = [userId];
             conn.query(sql, values, function (err, results, fields) {
                 if (err) {
                     console.log(err);
@@ -98,11 +97,11 @@ exports.deleteUser = function (id, callback) {
     });
 }
 
-exports.updateUser = function (id, pw, callback) {
+exports.updateUser = function (userId, pw, callback) {
     pool.getConnection(function (err, conn) {
         if (!err) {
             var sql = "UPDATE mydb.user SET pw = ? WHERE userId = ?";
-            var values = [pw, id];
+            var values = [pw, userId];
             conn.query(sql, values, function (err, results, fields) {
                 if (err) {
                     console.log(err);
