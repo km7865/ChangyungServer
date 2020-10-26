@@ -461,6 +461,8 @@ exports.readUserComment = function (req, res) {
     });
 
     req.on('end', () => {
+        var fs = require('fs');
+
         db.getUserComment(inputData.userId, (results) => {
             console.log(results); // 1 : 댓글 데이터, 2 : 실패
             if (results == 2) {
