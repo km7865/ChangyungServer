@@ -449,7 +449,7 @@ exports.readRecipeDetail = function (req, res) {
     req.on('end', () => {
         var fs = require('fs'); //File System 모듈 불러오기
 
-        db.readRecipeDetail((results) => {
+        db.readRecipeDetail(inputDate.recipeInId,(results) => {
             if (results == "2") {
                 res.write(results);
             } else {
