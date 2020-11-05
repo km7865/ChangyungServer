@@ -356,7 +356,7 @@ exports.updateRecipe = function (req, res) {
         var imgArr = JSON.parse(inputData["recipeImageBytes"]);
         for (var i = 0; i < Object.keys(imgArr).length; i++) {
             var bitmap = Buffer.from(imgArr[i]["recipeImageByte"], 'base64');
-            var imgPath = './img/' + recipeInId + '_' + i + '.png';
+            var imgPath = './img/' + inputData.recipeInId + '_' + i + '.png';
             if (i) imgPaths += '`';
             imgPaths += imgPath;
             fs.writeFile(imgPath, bitmap, (err) => {
@@ -438,6 +438,7 @@ exports.readRecipe = function (req, res) {
     });
 }
 
+// 레시피 상세 조회
 exports.readRecipeDetail = function (req, res) {
     console.log('who get in here post /readRecipeDetail');
     var inputData;
@@ -453,7 +454,7 @@ exports.readRecipeDetail = function (req, res) {
             if (results == "2") {
                 res.write(results);
             } else {
-                var recipe = results;
+                var recipe = results[0];
                 var recipeImageBytes = [];
                 var imgPaths = recipe["imgPath"].split('`');
                 for (var j = 0; j < imgPaths.length; j++) { //레시피의 이미지 경로수만큼
