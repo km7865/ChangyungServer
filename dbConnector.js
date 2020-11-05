@@ -245,6 +245,24 @@ exports.readUserRecipe = function (userId, callback) {
     });
 }
 
+exports.readRecipeDetail = function (recipeInId, callback) {
+    pool.getConnection(function (err, conn) {
+        if (!err) {
+            var sql = "SELECT * FROM mydb.recipeIn WHERE recipeInId = ?";
+            var values = [recipeInId];
+            conn.query(sql, values, function (err, results, fields) {
+                if (err) {
+                    console.log(err);
+                    callback("2");
+                } else {
+                    callback(results);
+                }
+            });
+        }
+        conn.release();
+    });
+}
+
 
 exports.createComment = function(recipeInId, userId, content, uploadDate, callback) {
     pool.getConnection(function (err, conn) {

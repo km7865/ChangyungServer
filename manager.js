@@ -1,7 +1,7 @@
 var db = require('./dbConnector.js');
 
 exports.useTest = function (req, res) {
-    var str = db.select((results) =>{
+    var str = db.select((results) => {
         console.log(results);
         res.json(results);
     });
@@ -100,8 +100,8 @@ exports.createComment = function (req, res) {
         //inputData = req.query
         db.createComment(inputData.recipeInId, inputData.userId, inputData.content, inputData.uploadDate, (results) => {
             console.log(results); // 1 : 성공, 2 : 실패, 3 : 중복
-                res.write(results);
-                res.end();
+            res.write(results);
+            res.end();
         });
     });
 }
@@ -117,8 +117,8 @@ exports.deleteComment = function (req, res) {
     req.on('end', () => {
         db.deleteComment(inputData.commentId, (results) => {
             console.log(results);   // 1 : 성공, 2 : 실패
-                res.write(results);
-                res.end();
+            res.write(results);
+            res.end();
         });
     });
 }
@@ -211,9 +211,9 @@ exports.login = function (req, res) {
     });
 
     req.on('end', () => {
-        console.log("id : "+inputData.userId + " , pw : "+inputData.pw);
+        console.log("id : " + inputData.userId + " , pw : " + inputData.pw);
 
-        db.checkLogin(inputData.userId, inputData.pw, (results) =>{
+        db.checkLogin(inputData.userId, inputData.pw, (results) => {
             console.log(results);
             res.write(results);
             res.end();
@@ -236,14 +236,13 @@ exports.signUp = function (req, res) {
 
         db.checkID(inputData.userId, inputData.pw, (results) => {
             console.log(results);
-            if(results == 1){
+            if (results == 1) {
                 db.signUpUser(inputData.userId, inputData.pw, (results2) => {
                     console.log(results2);
                     res.write(results2);
                     res.end();
                 });
-            }
-            else{
+            } else {
                 res.write(results);
                 res.end();
             }
@@ -432,6 +431,40 @@ exports.readRecipe = function (req, res) {
                     delete recipeArr[i].imgPath;
                 }
                 res.write(JSON.stringify(recipeArr));
+                console.log("read complete!");
+            }
+            res.end();
+        });
+    });
+}
+
+exports.readRecipeDetail = function (req, res) {
+    console.log('who get in here post /readRecipeDetail');
+    var inputData;
+
+    req.on('data', (data) => {
+        inputData = JSON.parse(data);
+    });
+
+    req.on('end', () => {
+        var fs = require('fs'); //File System 모듈 불러오기
+
+        db.readRecipeDetail((results) => {
+            if (results == "2") {
+                res.write(results);
+            } else {
+                var recipe = results;
+                var recipeImageBytes = [];
+                var imgPaths = recipe["imgPath"].split('`');
+                for (var j = 0; j < imgPaths.length; j++) { //레시피의 이미지 경로수만큼
+                    var imgPath = new Object();
+                    imgPath.recipeImageByte = fs.readFileSync(imgPaths[j], 'base64');
+                    recipeImageBytes.push(imgPath);
+                }
+                recipe["recipeImageBytes"] = recipeImageBytes;
+                delete recipe.imgPath;
+
+                res.write(JSON.stringify(recipe));
                 console.log("read complete!");
             }
             res.end();
