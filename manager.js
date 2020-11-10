@@ -88,6 +88,7 @@ exports.readUserRecipe = function (req, res) {
     });
 }
 
+//댓글 등록
 exports.createComment = function (req, res) {
     console.log('who get in here post /createComment');
     var inputData;
@@ -106,6 +107,7 @@ exports.createComment = function (req, res) {
     });
 }
 
+//댓글 삭제
 exports.deleteComment = function (req, res) {
     console.log('who get in here post /deleteComment');
     var inputData;
@@ -123,6 +125,7 @@ exports.deleteComment = function (req, res) {
     });
 }
 
+//댓글 목록 조회
 exports.readComment = function (req, res) {
     console.log('who get in here post /readComment');
     var inputData;
@@ -133,13 +136,14 @@ exports.readComment = function (req, res) {
 
     req.on('end', () => {
         db.getComment(inputData.recipeInId, (results) => {
-            console.log(JSON.stringify(results)); // 1 : 댓글 데이터, 2 : 실패
-            res.write(results);
+            console.log(results); // 1 : 댓글 데이터, 2 : 실패
+            res.write(JSON.stringify(results));
             res.end();
         });
     });
 }
 
+//내부 레시피 좋아요 등록
 exports.createLikeIn = function (req, res) {
     console.log('who get in here post /createLikeIn');
     var inputData;
@@ -150,7 +154,7 @@ exports.createLikeIn = function (req, res) {
 
     req.on('end', () => {
         //inputData = req.query
-        db.createLikeIn(inputData.recipeInId, inputData.userId, (results) => {
+        db.createLikeIn(inputData.recipeInId, inputData.userId, inputData.uploadDate, (results) => {
             console.log(results); // 1 : 성공, 2 : 실패
             res.write(results);
             res.end();
@@ -158,11 +162,9 @@ exports.createLikeIn = function (req, res) {
     });
 }
 
-exports.createLikeOut = function (req, res) {
-}
-
+//내부 레시피 좋아요 삭제
 exports.deleteLikeIn = function (req, res) {
-    console.log('who get in here post /deleteComment');
+    console.log('who get in here post /deleteLikeIn');
     var inputData;
 
     req.on('data', (data) => {
@@ -178,11 +180,9 @@ exports.deleteLikeIn = function (req, res) {
     });
 }
 
-exports.deleteLikeOut = function (req, res) {
-}
-
+//내부 레시피 좋아요 조회
 exports.readLikeIn = function (req, res) {
-    console.log('who get in here post /readComment');
+    console.log('who get in here post /readLikeIn');
     var inputData;
 
     req.on('data', (data) => {
@@ -198,7 +198,59 @@ exports.readLikeIn = function (req, res) {
     });
 }
 
+//외부 레시피 좋아요 등록
+exports.createLikeOut = function (req, res) {
+    console.log('who get in here post /createLikeOut');
+    var inputData;
+
+    req.on('data', (data) => {
+        inputData = JSON.parse(data);
+    });
+
+    req.on('end', () => {
+        //inputData = req.query
+        db.createLikeOut(inputData.recipeOutId, inputData.userId, inputData.uploadDate, (results) => {
+            console.log(results); // 1 : 성공, 2 : 실패
+            res.write(results);
+            res.end();
+        });
+    });
+}
+
+//외부 레시피 좋아요 삭제
+exports.deleteLikeOut = function (req, res) {
+    console.log('who get in here post /deleteLikeOut');
+    var inputData;
+
+    req.on('data', (data) => {
+        inputData = JSON.parse(data);
+    });
+
+    req.on('end', () => {
+        db.deleteLikeOut(inputData.recipeOutId, inputData.userId, (results) => {
+            console.log(results);   // 1 : 성공, 2 : 실패
+            res.write(results);
+            res.end();
+        });
+    });
+}
+
+//외부 레시피 좋아요 조회
 exports.readLikeOut = function (req, res) {
+    console.log('who get in here post /readLikeOut');
+    var inputData;
+
+    req.on('data', (data) => {
+        inputData = JSON.parse(data);
+    });
+
+    req.on('end', () => {
+        db.getLikeOut(inputData.recipeOutId, inputData.userId, (results) => {
+            console.log(results); // 1 : 좋아요 한 상태, 2 : 실패, 3 : 좋아요 안 한 상태
+            res.write(results);
+            res.end();
+        });
+    });
 }
 
 // 로그인
@@ -524,8 +576,57 @@ exports.readUserComment = function (req, res) {
 
 // 내가 좋아요한 내부 레시피 조회
 exports.readUserLikeIn = function (req, res) {
+    console.log('who get in here post /readUserLikeIn');
+    var inputData;
+
+    req.on('data', (data) => {
+        inputData = JSON.parse(data);
+    });
+
+    req.on('end', () => {
+        var fs = require('fs');
+
+        db.getUserLikeIn(inputData.userId, (results) => {
+            console.log(results); // 1 : 내부 레시피 데이터, 2 : 실패
+            if (results == 2) {
+                res.write(results);
+                res.end();
+            } else {
+                var commentArr = results;
+                var recipeImageBytes = [];
+                for (var i = 0; i < commentArr.length; i++) {
+                    recipeImageBytes = [];
+                    var imgPaths = commentArr[i]["imgPath"].split('`');
+                    var imgPath = new Object();
+                    imgPath.recipeImageByte = fs.readFileSync(imgPaths[0], 'base64');
+                    recipeImageBytes.push(imgPath);
+
+                    commentArr[i].recipeImageBytes = recipeImageBytes;
+                    delete commentArr[i].imgPath;
+                }
+                res.write(JSON.stringify(commentArr));
+                res.end();
+            }
+        });
+    });
 }
 
 // 내가 좋아요한 외부 레시피 조회
 exports.readUserLikeOut = function (req, res) {
+    console.log('who get in here post /readUserLikeOut');
+    var inputData;
+
+    req.on('data', (data) => {
+        inputData = JSON.parse(data);
+    });
+
+    req.on('end', () => {
+        var fs = require('fs');
+
+        db.getUserLikeIn(inputData.userId, (results) => {
+            console.log(results); // 1 : 외부 레시피 데이터, 2 : 실패
+            res.write(JSON.stringify(results));
+            res.end();
+        });
+    });
 }
