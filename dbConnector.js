@@ -164,9 +164,7 @@ exports.updateRecipe = function (recipeInId, title, ingredient, ingredientUnit,
                 if (err) {
                     console.log(err);
                     callback("2");
-                } else {
-                    callback("1");
-                }
+                } else callback("1");
             });
         }
         conn.release();
@@ -255,7 +253,7 @@ exports.readRecipeDetail = function (recipeInId, callback) {
                     console.log(err);
                     callback("2");
                 } else {
-                    callback(results);
+                    callback(results[0]);
                 }
             });
         }

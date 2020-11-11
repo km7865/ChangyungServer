@@ -364,7 +364,7 @@ exports.createRecipe = function (req, res) {
                     res.write(results);
                     res.end();
                 } else {
-                    var recipeInId = results[0];
+                    var recipeInId = results;
                     var imgPaths = "";
                     var fs = require('fs'); //File System 모듈 불러오기
                     var imgArr = JSON.parse(inputData["recipeImageBytes"]);
@@ -506,7 +506,7 @@ exports.readRecipeDetail = function (req, res) {
             if (results == "2") {
                 res.write(results);
             } else {
-                var recipe = results[0];
+                var recipe = results;
                 var recipeImageBytes = [];
                 var imgPaths = recipe["imgPath"].split('`');
                 for (var j = 0; j < imgPaths.length; j++) { //레시피의 이미지 경로수만큼
