@@ -73,12 +73,10 @@ exports.readUserRecipe = function (req, res) {
                 for (var i = 0; i < recipeArr.length; i++) {
                     recipeImageBytes = [];
                     var imgPaths = recipeArr[i]["imgPath"].split('`');
-                    for (var j = 0; j < 1; j++) {
-                        var imgPath = new Object();
-                        imgPath.recipeImageByte = fs.readFileSync(imgPaths[j], 'base64');
-                        recipeImageBytes.push(imgPath);
-                    }
-                    recipeArr[i].recipeImageBytes = recipeImageBytes;
+                    var imgPath = new Object();
+                    imgPath.recipeImageByte = fs.readFileSync(imgPaths[0], 'base64');
+                    recipeImageBytes.push(imgPath);
+                    recipeArr[i]["recipeImageBytes"] = recipeImageBytes;
                     delete recipeArr[i].imgPath;
                 }
                 res.write(JSON.stringify(recipeArr));
@@ -472,16 +470,15 @@ exports.readRecipe = function (req, res) {
                 var recipeArr = results;
                 var recipeImageBytes = [];
                 for (var i = 0; i < recipeArr.length; i++) { //1레시피 2레시피
-                    var imgPaths = recipeArr[i]["imgPath"].split('`');
                     recipeImageBytes = [];
-                    for (var j = 0; j < 1; j++) { //레시피의 이미지 경로수만큼
-                        var imgPath = new Object();
-                        imgPath.recipeImageByte = fs.readFileSync(imgPaths[j], 'base64');
-                        recipeImageBytes.push(imgPath);
-                    }
+                    var imgPaths = recipeArr[i]["imgPath"].split('`');
+                    var imgPath = new Object();
+                    imgPath.recipeImageByte = fs.readFileSync(imgPaths[0], 'base64');
+                    recipeImageBytes.push(imgPath);
                     recipeArr[i]["recipeImageBytes"] = recipeImageBytes;
                     delete recipeArr[i].imgPath;
                 }
+
                 res.write(JSON.stringify(recipeArr));
                 console.log("read complete!");
             }
