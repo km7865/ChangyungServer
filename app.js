@@ -29,6 +29,7 @@ app.use('/createRecipe', manager.createRecipe);
 app.use('/updateRecipe', manager.updateRecipe);
 app.use('/deleteRecipe', manager.deleteRecipe);
 app.use('/readRecipe', manager.readRecipe);
+app.use('/readRecipeDetail', manager.readRecipeDetail);
 
 app.use('/updateSetting', manager.updateSetting);
 

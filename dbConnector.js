@@ -164,9 +164,7 @@ exports.updateRecipe = function (recipeInId, title, ingredient, ingredientUnit,
                 if (err) {
                     console.log(err);
                     callback("2");
-                } else {
-                    callback("1");
-                }
+                } else callback("1");
             });
         }
         conn.release();
@@ -245,6 +243,24 @@ exports.readUserRecipe = function (userId, callback) {
     });
 }
 
+exports.readRecipeDetail = function (recipeInId, callback) {
+    pool.getConnection(function (err, conn) {
+        if (!err) {
+            var sql = "SELECT * FROM mydb.recipeIn WHERE recipeInId = ?";
+            var values = [recipeInId];
+            conn.query(sql, values, function (err, results, fields) {
+                if (err) {
+                    console.log(err);
+                    callback("2");
+                } else {
+                    callback(results[0]);
+                }
+            });
+        }
+        conn.release();
+    });
+}
+
 
 exports.createComment = function(recipeInId, userId, content, uploadDate, callback) {
     pool.getConnection(function (err, conn) {
@@ -301,12 +317,12 @@ exports.getComment = function(recipeInId, callback){
     });
 }
 
-exports.createLikeIn = function(recipeInId, userId, callback){
+exports.createLikeIn = function(recipeInId, userId, uploadDate, callback){
     pool.getConnection(function (err, conn) {
         if(!err) {
-            var sql = "insert into mydb.likein(recipeInId, userId) " +
+            var sql = "insert into mydb.likein(recipeInId, userId, uploadDate) " +
                 "value(?, ?)"
-            var values = [recipeInId, userId]
+            var values = [recipeInId, userId, uploadDate]
             conn.query(sql, values, function(err, results, fields) {
                 if (err) {
                     console.log(err);
@@ -338,11 +354,71 @@ exports.deleteLikeIn = function(recipeInId, userId, callback){
     });
 }
 
-exports.getLikeIn = function(){
+exports.getLikeIn = function(recipeInId, userId, callback){
     pool.getConnection(function (err, conn) {
         if(!err) {
             var sql = "select * from mydb.likein where recipeInId=? and userId=?"
             var values = [recipeInId, userId]
+            conn.query(sql, values, function(err, results, fields) {
+                if (err) {
+                    console.log(err);
+                    callback(2)
+                }
+
+                var len = results.length
+
+                if(len == 0)
+                    callback(3)
+                else
+                    callback(1)
+            });
+        }
+        conn.release();
+    });
+}
+
+exports.createLikeOut = function(recipeOutId, userId, uploadDate, callback){
+    pool.getConnection(function (err, conn) {
+        if(!err) {
+            var sql = "insert into mydb.likeout(recipeOutId, userId, uploadDate) " +
+                "value(?, ?)"
+            var values = [recipeOutId, userId, uploadDate]
+            conn.query(sql, values, function(err, results, fields) {
+                if (err) {
+                    console.log(err);
+                    callback(2)
+                }
+                console.log("ok");
+                callback(1)
+            });
+        }
+        conn.release();
+    });
+}
+
+exports.deleteLikeOut = function(recipeOutId, userId, callback){
+    pool.getConnection(function (err, conn) {
+        if(!err) {
+            var sql = "delete from mydb.likeout where recipeOutId=? and userId=?"
+            var values = [recipeOutId, userId]
+            conn.query(sql, values, function(err, results, fields) {
+                if (err) {
+                    console.log(err);
+                    callback(2)
+                }
+                console.log("ok");
+                callback(1)
+            });
+        }
+        conn.release();
+    });
+}
+
+exports.getLikeOut = function(recipeOutId, userId, callback){
+    pool.getConnection(function (err, conn) {
+        if(!err) {
+            var sql = "select * from mydb.likeout where recipeOutId=? and userId=?"
+            var values = [recipeOutId, userId]
             conn.query(sql, values, function(err, results, fields) {
                 if (err) {
                     console.log(err);
@@ -383,7 +459,41 @@ exports.getUserComment = function(userId, callback){
 }
 
 exports.getUserLikeIn = function(userId, callback){
+    pool.getConnection(function (err, conn) {
+        if(!err) {
+            var sql = "SELECT likein.recipeInId, likein.userId, recipein.title, " +
+                "recipein.imgPath, likein.uploadDate FROM mydb.likein, mydb.recipein " +
+                "where likein.userId=? and recipein.recipeInId = likein.recipeInId"
+            var values = [userId]
+            conn.query(sql, values, function(err, results, fields) {
+                if (err) {
+                    console.log(err);
+                    callback(2)
+                }
+                console.log("ok");
+                callback(results)
+            });
+        }
+        conn.release();
+    });
 }
 
 exports.getUserLikeOut = function(userId, callback){
+    pool.getConnection(function (err, conn) {
+        if(!err) {
+            var sql = "SELECT likeout.recipeOutId, likeout.userId, recipeout.title, " +
+                "likeout.uploadDate FROM mydb.likeout, mydb.recipeout " +
+                "where likeout.userId=? and recipeout.recipeOutId = likeout.recipeOutId"
+            var values = [userId]
+            conn.query(sql, values, function(err, results, fields) {
+                if (err) {
+                    console.log(err);
+                    callback(2)
+                }
+                console.log("ok");
+                callback(results)
+            });
+        }
+        conn.release();
+    });
 }
