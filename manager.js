@@ -139,7 +139,7 @@ exports.createComment = function (req, res) {
     req.on('end', () => {
         //inputData = req.query
         db.createComment(inputData.recipeInId, inputData.userId, inputData.content, inputData.uploadDate, (results) => {
-            console.log(results); // 1 : 성공, 2 : 실패, 3 : 중복
+            console.log(results); // 1 : 성공, 2 : 실패
             res.write(results);
             res.end();
         });
