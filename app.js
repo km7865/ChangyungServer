@@ -6,7 +6,7 @@ var manager = require('./manager.js');
 app.use('/se', manager.useTest);
 
 app.use('/reqSearchRecipe', manager.reqSearchRecipe);
-app.use('/reqBsetRecipe', manager.reqBestRecipe);
+app.use('/reqBestRecipe', manager.reqBestRecipe);
 app.use('/readUserRecipe', manager.readUserRecipe);
 
 app.use('/createComment', manager.createComment);

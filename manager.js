@@ -50,6 +50,27 @@ exports.reqSearchRecipe = function (req, res) {
 }
 
 exports.reqBestRecipe = function (req, res) {
+    console.log('who get in here post /reqBestRecipe');
+    var inputData;
+    req.on('data', (data) => {
+        inputData = JSON.parse(data);
+    });
+
+    var moment = require('moment');
+    // require('moment-timezone');
+    // moment.tz.setDefault("Asia/Seoul");
+    var year = moment().format('YYYY');
+    var month = moment().format('MM');
+    console.log("year : " + year + ", month : " + month)
+
+    req.on('end', () => {
+        //inputData = req.query
+        db.searchBestRecipeList(year, month, (results) => {
+            console.log(results); // 2 : 에러 , 3 : 레시피 갯수 0개
+            res.write(results);
+            res.end();
+        });
+    });
 }
 
 // 내가 등록한 레시피 조회

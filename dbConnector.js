@@ -16,6 +16,35 @@ exports.select = function(callback) {
     });
 }
 
+//--------------------------------------------
+
+exports.searchRecipeList = function(userId, pw, callback) {
+
+}
+
+exports.searchBestRecipeList = function(year, month, callback) {
+    pool.getConnection(function (err, conn) {
+        if(!err) {
+            var sql = "SELECT * FROM mydb.recipein where YEAR(uploadDate) = ? and MONTH(uploadDate) = ? order by likeCount desc limit 5"
+            var values = [year, month]
+            conn.query(sql, values, function(err, results, fields) {
+                if (err) {
+                    console.log(err);
+                    callback("2")
+                }
+
+                var len = results.length
+
+                if(len == 0)
+                    callback("3")
+                else
+                    callback(results)
+            });
+        }
+        conn.release();
+    });
+}
+
 //callback 매개변수는 항상 마지막에
 exports.checkID = function(userId, pw, callback) {
     pool.getConnection(function (err, conn) {
