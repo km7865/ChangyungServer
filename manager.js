@@ -67,8 +67,26 @@ exports.reqBestRecipe = function (req, res) {
         //inputData = req.query
         db.searchBestRecipeList(year, month, (results) => {
             console.log(results); // 2 : 에러 , 3 : 레시피 갯수 0개
-            res.write(results);
-            res.end();
+            if(results == 2 || results == 3)
+            {
+                res.write(results);
+                res.end();
+            } else {
+                var commentArr = results;
+                var recipeImageBytes = [];
+                for (var i = 0; i < commentArr.length; i++) {
+                    recipeImageBytes = [];
+                    var imgPaths = commentArr[i]["imgPath"].split('`');
+                    var imgPath = new Object();
+                    imgPath.recipeImageByte = fs.readFileSync(imgPaths[0], 'base64');
+                    recipeImageBytes.push(imgPath);
+
+                    commentArr[i].recipeImageBytes = recipeImageBytes;
+                    delete commentArr[i].imgPath;
+                }
+                res.write(JSON.stringify(commentArr));
+                res.end();
+            }
         });
     });
 }
