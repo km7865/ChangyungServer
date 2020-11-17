@@ -528,7 +528,280 @@ exports.updateSetting = function (req, res) {
 exports.readIngOutRecipe = function (req, res) {
 }
 
+
+// 요리기반 외부레시피 목록 조회
 exports.readFoodOutRecipe = function (req, res) {
+    console.log('who get in here post /readFoodOutRecipe');
+    var inputData;
+
+    req.on('data', (data) => {
+        inputData = JSON.parse(data);
+    });
+
+    // 1. 외부레시피 테이블 검색 후 레시피가 존재한다면 리스트 반환
+    // 2. 레시피가 존재하지 않는다면 크롤링 시작
+    // 3. 크롤링 후 주소, 제목, 재료, 이미지를 데이터베이스에 삽입 후 리스트 반환
+
+    req.on('end', () => {
+        const title = inputData.title;
+
+        const searchUrl = "https://www.10000recipe.com/recipe/list.html?q=" + encodeURI(title);
+
+        // 함수 설명
+        // 1. getPages      : 검색된 레시피 결과의 개수로 크롤링할 페이지수 구하기 (1 페이지당 최대 40개의 레시피)
+        // 2. getPageUrls   : 1차(getPageUrl) - 해당 페이지에서 조건을 만족하는 레시피 url 배열(linkArr)로 반환
+        //                  : 2차(getPageUrls) - linkArr 들로 이루어진 2차원 배열 linkArrays 로 반환
+        // 3. getRecipes    : 1차(getRecipe) - 해당 레시피의 링크, 제목, 재료, 이미지 주소를 딕셔너리(recipe)로 반환
+        //                  : 2차(getRecipes) - recipe 들로 이루어진 배열 recipes 로 반환
+        // 4. saveRecipes   : recipes 레시피 정보를 데이터베이스에 저장
+        //                  : 레시피의 링크, 제목, 재료를 우선적으로 저장한 뒤 recipeOutId를 얻어 이미지 다운로드 및 이미지 경로 갱신
+
+        getPages(searchUrl)
+            .then(getPageUrls)
+            .then(checkUrls)
+            .then(getRecipes)
+            .then(saveRecipes)
+            .then((recipes) => {
+                if (recipes.length == 0) res.write("3"); // 레시피 없음
+                else {
+                    // 클라이언트에 recipe list 전송
+                    // JSON 형식
+                    // 'title' : 레시피 제목
+                    // 'link' : 레시피 링크
+                    // 'ingredient' : 레시피 재료
+                    // 'recipeImageByte' : 레시피 대표 이미지
+                    res.write(recipes);
+                }
+                res.end();
+            });
+    });
+}
+
+function getPages(url) {
+    console.log("getPages");
+    return new Promise((resolve, reject) => {
+        axios.get(url)
+            .then(function (response) {
+                const $ = cheerio.load(response.data);
+                // 검색된 레시피 개수를 구한 뒤 페이지 수 구하기
+                let volume = $('.m_list_tit').find('b').text().replace(",", "");
+                let pages = Math.ceil(volume / 40);
+                console.log(volume + ", " + pages);
+                let pageURL = url + "&order=reco&page=";
+                let result = {
+                    volume: volume,
+                    pages: pages,
+                    pageURL: pageURL
+                };
+                resolve(result);
+            })
+            .catch(function (error) {
+                console.log(error);
+            })
+            .then(function () {
+            });
+    });
+}
+
+function getPageUrls(result) {
+    let volume = result.volume;
+    let pages = result.pages;
+    let pageURL = result.pageURL;
+    let promises = new Array();
+
+    for (let page = 1; page <= pages; page++) {
+        promises.push(new Promise(function (resolve, reject) {
+            resolve(getPageUrl(pageURL + page));
+        }));
+    }
+
+    return new Promise((resolve, reject) => {
+        Promise.all(promises)
+            .then((linkArrays) => {
+                resolve(linkArrays);
+            });
+    });
+}
+
+function getPageUrl(url) {
+    return new Promise((resolve, reject) => {
+        let linkArr = new Array();
+
+        axios.get(url)
+            .then(function (response) {
+                const $ = cheerio.load(response.data);
+
+                //let list = $('.common_sp_link');
+                let linkList = $('.common_sp_link');
+                let hitList = $('.common_sp_caption_buyer').text().split("조회수 ");
+                hitList = hitList.slice(1, hitList.length);
+
+                for (let i = 0; i < linkList.length; i++) {
+                    let link = "https://www.10000recipe.com" + linkList[i].attribs.href;
+                    let hit = hitList[i];
+                    if (hit.includes("만")) hit = hit.replace("만", "000");
+                    hit = hit.replace(',', "");
+                    hit = hit.replace('.', "");
+                    // 조회수가 1만 이상이 아니라면 continue
+                    if (hit < 10000) continue;
+
+                    linkArr.push(link);
+                }
+                resolve(linkArr);
+            })
+            .catch(function (error) {
+                console.log(error);
+            })
+            .then(function () {
+            });
+    });
+}
+
+// 중복 체크
+function checkUrls(linkArrays) {
+    if (linkArrays.length == 0) {
+        console.log("no link in checkUrls.");
+        return 0;
+    }
+
+    let promises = new Array();
+    // i : page 개수, j : page 내의 recipe 개수
+    for (let i = 0; i < linkArrays.length; i++) {
+        for (let j = 0; j < linkArrays[i].length; j++) {
+            promises.push(new Promise(function (resolve, reject) {
+                db.checkLink(linkArrays[i][j], (results) => {
+                    if (results == "3") resolve(linkArrays[i][j]);
+                    else resolve("`");
+                });
+            }));
+        }
+    }
+
+    return new Promise((resolve, reject) => {
+        Promise.all(promises)
+            .then((linkArr) => {
+                while(linkArr.indexOf("`") != -1) {
+                    linkArr.splice(linkArr.indexOf("`"),1);
+                }
+
+                resolve(linkArr);
+            });
+    });
+}
+
+function getRecipes(linkArr) {
+    if (linkArr.length == 0) {
+        console.log("no link in getRecipes.");
+        return 0;
+    }
+
+    const MAX_COUNT = 100;
+    let count = 0;
+
+    let promises = new Array();
+    console.log("linkArr.length: " + linkArr.length);
+    for (let i = 0; i < linkArr.length; i++) {
+        promises.push(new Promise(function (resolve, reject) {
+            console.log(linkArr[i]);
+            resolve(getRecipe(linkArr[i]));
+        }));
+        if (count++ >= MAX_COUNT) break;
+    }
+
+    return new Promise((resolve, reject) => {
+        Promise.all(promises)
+            .then((recipes) => {
+                resolve(recipes);
+            });
+    });
+}
+
+function getRecipe(recipeURL) {
+    return new Promise((resolve, reject) => {
+        let recipe = {};
+
+        axios.get(recipeURL)
+            .then(function (response) {
+
+                const $ = cheerio.load(response.data);
+
+                // 레시피 제목
+                let title = $('.view2_summary').find('h3').text();
+
+                // 레시피 재료 리스트
+                let ingredients = $('.ready_ingre3').find('a').find('li');
+                let ingredient = "";
+                for (let i = 0; i < ingredients.length; i++) {
+                    if (i) ingredient += '`';
+                    ingredient += ingredients[i].children[0].data.trim();
+                }
+                // 레시피 대표 이미지 경로
+                let imgUrl = $('.centeredcrop').find('img')[0].attribs.src;
+
+                recipe['title'] = title;
+                recipe['link'] = recipeURL;
+                recipe['ingredient'] = ingredient;
+                recipe['imgUrl'] = imgUrl;
+
+                console.log(recipe['title']);
+                resolve(recipe);
+            })
+            .catch(function (error) {
+                console.log(error);
+            })
+            .then(function () {
+            });
+    });
+}
+
+function saveRecipes(recipes) {
+    let promises = new Array();
+
+    for (let i = 0; i < recipes.length; i++) {
+        let link = recipes[i].link;
+        let title = recipes[i].title;
+        let ingredient = recipes[i].ingredient;
+        let imgUrl = recipes[i]['imgUrl'];
+
+        promises.push(new Promise(function (resolve, reject) {
+            db.createRecipeOut(link, title, ingredient, (results) => {
+                if (results == "2") resolve(results);
+                else {
+                    let recipeOutId = results;
+                    let recipeImageByte = [];
+                    let imgPath = './imgOut/' + recipeOutId + '.png';
+
+                    axios.get(imgUrl, {responseType: 'arraybuffer'})
+                        .then(function (response) {
+                                recipeImageByte = Buffer.from(response.data, 'base64');
+                                recipes[i]['recipeImageByte'] = recipeImageByte;
+
+                                fs.writeFile(imgPath, recipeImageByte, (err) => {
+                                    if (err) {
+                                        console.log(err);
+                                        throw err;
+                                    } else console.log('write Complete!');
+                                });
+
+                                db.updateImgPathOut(recipeOutId, imgPath, (results) => {
+                                    if (results == "2") resolve(results);
+                                    else resolve(recipes[i]);
+                                });
+                            }
+                                .catch(err => alert(err))
+                        );
+                }
+            });
+        }));
+    }
+
+    return new Promise((resolve, reject) => {
+        Promise.all(promises)
+            .then((recipes) => {
+                console.log("recipes.length : " + recipes.length);
+                resolve(recipes);
+            });
+    });
 }
 
 exports.readIngPrice = function (req, res) {
@@ -627,3 +900,4 @@ exports.readUserLikeOut = function (req, res) {
         });
     });
 }
+
