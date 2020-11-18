@@ -321,7 +321,7 @@ exports.createLikeIn = function(recipeInId, userId, uploadDate, callback){
     pool.getConnection(function (err, conn) {
         if(!err) {
             var sql = "insert into mydb.likein(recipeInId, userId, uploadDate) " +
-                "value(?, ?)"
+                "value(?, ?, ?)"
             var values = [recipeInId, userId, uploadDate]
             conn.query(sql, values, function(err, results, fields) {
                 if (err) {
