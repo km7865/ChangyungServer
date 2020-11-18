@@ -35,7 +35,9 @@ app.use('/updateSetting', manager.updateSetting);
 
 app.use('/readIngOutRecipe', manager.readIngOutRecipe);
 app.use('/readFoodOutRecipe', manager.readFoodOutRecipe);
+app.use('/updateIngPrice', manager.updateIngPrice);
 app.use('/readIngPrice', manager.readIngPrice);
+app.use('/updateIngPrice', manager.updateIngPrice);
 
 app.use('/readUserComment', manager.readUserComment);
 app.use('/readUserLikeIn', manager.readUserLikeIn);

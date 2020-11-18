@@ -466,6 +466,113 @@ exports.getLikeOut = function(recipeOutId, userId, callback){
     });
 }
 
+exports.createIngPrice = function(ingName, ingPriceUnit, callback){
+    pool.getConnection(function (err, conn) {
+        if(!err) {
+            var sql1 = "select ingName from mydb.ingredientprice where ingName = ?"
+            var values1 = [ingName]
+            conn.query(sql1, values1, function(err, results, fields) {
+                if (err) {
+                    console.log(err);
+                    callback(2)
+                }
+                var len = results.length
+
+                if(len != 0)
+                    callback(3)
+                else {
+                    var sql2 = "insert into mydb.ingredientprice(ingName, ingPriceUnit) " +
+                        "value(?, ?)"
+                    var values2 = [ingName, ingPriceUnit]
+                    conn.query(sql2, values2, function(err, results, fields) {
+                        if (err) {
+                            console.log(err);
+                            callback(2)
+                        }
+                        console.log("ok");
+                        callback(1)
+                    });
+                }
+            });
+        }
+        conn.release();
+    });
+}
+
+exports.checkIngPrice = function(ingName, callback){
+    pool.getConnection(function (err, conn) {
+        if(!err) {
+            var sql = "select ingName from mydb.ingredientprice where ingName = ?"
+            var values = [ingName]
+            conn.query(sql, values, function(err, results, fields) {
+                if (err) {
+                    console.log(err);
+                    callback(2)
+                }
+                var len = results.length
+
+                if(len != 0)
+                    callback(3)
+                else
+                    callback(1)
+            });
+        }
+        conn.release();
+    });
+}
+
+exports.getIngPrice = function(ingName, callback){
+    pool.getConnection(function (err, conn) {
+        if(!err) {
+            var sql = "select * from mydb.ingredientprice where ingName = ?"
+            var values = [ingName]
+            conn.query(sql, values, function(err, results, fields) {
+                if (err) {
+                    console.log(err);
+                    callback(2)
+                }
+                else
+                    callback(results)
+            });
+        }
+        conn.release();
+    });
+}
+
+exports.getIngFromRecipeIn = function(callback){
+    pool.getConnection(function (err, conn) {
+        if(!err) {
+            var sql = "select ingredient from mydb.recipein"
+            conn.query(sql, function(err, results, fields) {
+                if (err) {
+                    console.log(err);
+                    callback(2)
+                }
+                else
+                    callback(results)
+            });
+        }
+        conn.release();
+    });
+}
+
+exports.getIngFromRecipeOut = function(callback){
+    pool.getConnection(function (err, conn) {
+        if(!err) {
+            var sql = "select ingredient from mydb.recipeout"
+            conn.query(sql, function(err, results, fields) {
+                if (err) {
+                    console.log(err);
+                    callback(2)
+                }
+                else
+                    callback(results)
+            });
+        }
+        conn.release();
+    });
+}
+
 exports.getUserComment = function(userId, callback){
     pool.getConnection(function (err, conn) {
         if(!err) {
