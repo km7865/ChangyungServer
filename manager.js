@@ -596,7 +596,7 @@ exports.readFoodOutRecipe = function (req, res) {
     return webElement;
 }*/
 
-// 크롤링 후 결과값인 재료값 DB에 등록
+// 크롤링 후 결과값인 재료값을 DB에 등록
 async function uploadIngPrice(ing){
     var key = ing
     const url = "http://search.danawa.com/dsearch.php?query=" + encodeURI(key) +
