@@ -76,7 +76,7 @@ exports.reqBestRecipe = function (req, res) {
         //inputData = req.query
         db.searchBestRecipeList(year, month, (results) => {
             console.log(results); // 2 : 에러 , 3 : 레시피 갯수 0개
-            if(results == 2 || results == 3)
+            if(results == "2" || results == "3")
             {
                 res.write(results);
                 res.end();
@@ -113,7 +113,7 @@ exports.readUserRecipe = function (req, res) {
         var fs = require('fs'); //File System 모듈 불러오기
 
         db.readUserRecipe(inputData.userId, (results) => {
-            if (results == 2) {
+            if (results == "2") {
                 res.write(results);
             } else {
                 var recipeArr = results;
@@ -336,7 +336,7 @@ exports.signUp = function (req, res) {
 
         db.checkID(inputData.userId, inputData.pw, (results) => {
             console.log(results);
-            if (results == 1) {
+            if (results == "1") {
                 db.signUpUser(inputData.userId, inputData.pw, (results2) => {
                     console.log(results2);
                     res.write(results2);
@@ -797,16 +797,16 @@ exports.readIngPrice = function (req, res) {
         var i = 0;
         ingData.forEach(function (e){
             db.checkIngPrice(e, (results) => {
-                if (results == 2) {
+                if (results == "2") {
                     res.write(results);
                     res.end();
                 }
                 else{
-                    if (results == 1)
+                    if (results == "1")
                         uploadIngPrice(e)
 
                     db.getIngPrice(e, (results) => {
-                        if (results == 2) {
+                        if (results == "2") {
                             res.write(results);
                             res.end();
                         }
@@ -839,13 +839,13 @@ exports.updateIngPrice = function (req, res) {
 
     req.on('end', () => {
         db.getIngFromRecipeIn((results) => {
-            if(results == 2) {
+            if(results == "2") {
                 res.write(results);
                 res.end();
             }
             else {
                 db.getIngFromRecipeOut((results2) => {
-                    if(results2 == 2) {
+                    if(results2 == "2") {
                         res.write(results);
                         res.end();
                     }
@@ -864,12 +864,12 @@ exports.updateIngPrice = function (req, res) {
                                 setArray = Array.from(new Set(ingArray))
                                 setArray.forEach(function(g) {
                                     db.checkIngPrice(g, (results) => {
-                                        if (results == 2) {
+                                        if (results == "2") {
                                             res.write(results);
                                             res.end();
                                         }
                                         else{
-                                            if (results == 1)
+                                            if (results == "1")
                                                 uploadIngPrice(g)
                                         }
                                     })
@@ -898,7 +898,7 @@ exports.readUserComment = function (req, res) {
 
         db.getUserComment(inputData.userId, (results) => {
             console.log(results); // 1 : 댓글 데이터, 2 : 실패
-            if (results == 2) {
+            if (results == "2") {
                 res.write(results);
                 res.end();
             } else {
@@ -935,7 +935,7 @@ exports.readUserLikeIn = function (req, res) {
 
         db.getUserLikeIn(inputData.userId, (results) => {
             console.log(results); // 1 : 내부 레시피 데이터, 2 : 실패
-            if (results == 2) {
+            if (results == "2") {
                 res.write(results);
                 res.end();
             } else {

@@ -300,10 +300,10 @@ exports.createComment = function(recipeInId, userId, content, uploadDate, callba
             conn.query(sql, values, function(err, results, fields) {
                 if (err) {
                     console.log(err);
-                    callback(2)
+                    callback("2")
                 }
                 console.log("ok");
-                callback(1)
+                callback("1")
             });
         }
         conn.release();
@@ -318,10 +318,10 @@ exports.deleteComment = function(commentId, callback){
             conn.query(sql, values, function(err, results, fields) {
                 if (err) {
                     console.log(err);
-                    callback(2)
+                    callback("2")
                 }
                 console.log("ok");
-                callback(1)
+                callback("1")
             });
         }
         conn.release();
@@ -336,7 +336,7 @@ exports.getComment = function(recipeInId, callback){
             conn.query(sql, values, function(err, results, fields) {
                 if (err) {
                     console.log(err);
-                    callback(2)
+                    callback("2")
                 }
                 console.log("ok");
                 callback(results)
@@ -355,10 +355,10 @@ exports.createLikeIn = function(recipeInId, userId, uploadDate, callback){
             conn.query(sql, values, function(err, results, fields) {
                 if (err) {
                     console.log(err);
-                    callback(2)
+                    callback("2")
                 }
                 console.log("ok");
-                callback(1)
+                callback("1")
             });
         }
         conn.release();
@@ -373,10 +373,10 @@ exports.deleteLikeIn = function(recipeInId, userId, callback){
             conn.query(sql, values, function(err, results, fields) {
                 if (err) {
                     console.log(err);
-                    callback(2)
+                    callback("2")
                 }
                 console.log("ok");
-                callback(1)
+                callback("1")
             });
         }
         conn.release();
@@ -391,15 +391,15 @@ exports.getLikeIn = function(recipeInId, userId, callback){
             conn.query(sql, values, function(err, results, fields) {
                 if (err) {
                     console.log(err);
-                    callback(2)
+                    callback("2")
                 }
 
                 var len = results.length
 
                 if(len == 0)
-                    callback(3)
+                    callback("3")
                 else
-                    callback(1)
+                    callback("1")
             });
         }
         conn.release();
@@ -415,10 +415,10 @@ exports.createLikeOut = function(recipeOutId, userId, uploadDate, callback){
             conn.query(sql, values, function(err, results, fields) {
                 if (err) {
                     console.log(err);
-                    callback(2)
+                    callback("2")
                 }
                 console.log("ok");
-                callback(1)
+                callback("1")
             });
         }
         conn.release();
@@ -433,10 +433,10 @@ exports.deleteLikeOut = function(recipeOutId, userId, callback){
             conn.query(sql, values, function(err, results, fields) {
                 if (err) {
                     console.log(err);
-                    callback(2)
+                    callback("2")
                 }
                 console.log("ok");
-                callback(1)
+                callback("1")
             });
         }
         conn.release();
@@ -451,15 +451,15 @@ exports.getLikeOut = function(recipeOutId, userId, callback){
             conn.query(sql, values, function(err, results, fields) {
                 if (err) {
                     console.log(err);
-                    callback(2)
+                    callback("2")
                 }
 
                 var len = results.length
 
                 if(len == 0)
-                    callback(3)
+                    callback("3")
                 else
-                    callback(1)
+                    callback("1")
             });
         }
         conn.release();
@@ -474,12 +474,12 @@ exports.createIngPrice = function(ingName, ingPriceUnit, callback){
             conn.query(sql1, values1, function(err, results, fields) {
                 if (err) {
                     console.log(err);
-                    callback(2)
+                    callback("2")
                 }
                 var len = results.length
 
                 if(len != 0)
-                    callback(3)
+                    callback("3")
                 else {
                     var sql2 = "insert into mydb.ingredientprice(ingName, ingPriceUnit) " +
                         "value(?, ?)"
@@ -487,10 +487,10 @@ exports.createIngPrice = function(ingName, ingPriceUnit, callback){
                     conn.query(sql2, values2, function(err, results, fields) {
                         if (err) {
                             console.log(err);
-                            callback(2)
+                            callback("2")
                         }
                         console.log("ok");
-                        callback(1)
+                        callback("1")
                     });
                 }
             });
@@ -507,14 +507,14 @@ exports.checkIngPrice = function(ingName, callback){
             conn.query(sql, values, function(err, results, fields) {
                 if (err) {
                     console.log(err);
-                    callback(2)
+                    callback("2")
                 }
                 var len = results.length
 
                 if(len != 0)
-                    callback(3)
+                    callback("3")
                 else
-                    callback(1)
+                    callback("1")
             });
         }
         conn.release();
@@ -529,7 +529,7 @@ exports.getIngPrice = function(ingName, callback){
             conn.query(sql, values, function(err, results, fields) {
                 if (err) {
                     console.log(err);
-                    callback(2)
+                    callback("2")
                 }
                 else
                     callback(results)
@@ -546,7 +546,7 @@ exports.getIngFromRecipeIn = function(callback){
             conn.query(sql, function(err, results, fields) {
                 if (err) {
                     console.log(err);
-                    callback(2)
+                    callback("2")
                 }
                 else
                     callback(results)
@@ -563,7 +563,7 @@ exports.getIngFromRecipeOut = function(callback){
             conn.query(sql, function(err, results, fields) {
                 if (err) {
                     console.log(err);
-                    callback(2)
+                    callback("2")
                 }
                 else
                     callback(results)
@@ -584,7 +584,7 @@ exports.getUserComment = function(userId, callback){
             conn.query(sql, values, function(err, results, fields) {
                 if (err) {
                     console.log(err);
-                    callback(2)
+                    callback("2")
                 }
                 console.log("ok");
                 callback(results)
@@ -604,7 +604,7 @@ exports.getUserLikeIn = function(userId, callback){
             conn.query(sql, values, function(err, results, fields) {
                 if (err) {
                     console.log(err);
-                    callback(2)
+                    callback("2")
                 }
                 console.log("ok");
                 callback(results)
@@ -624,7 +624,7 @@ exports.getUserLikeOut = function(userId, callback){
             conn.query(sql, values, function(err, results, fields) {
                 if (err) {
                     console.log(err);
-                    callback(2)
+                    callback("2")
                 }
                 console.log("ok");
                 callback(results)
