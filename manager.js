@@ -585,15 +585,12 @@ exports.readRecipe = function (req, res) {
                 res.write(results);
             } else {
                 var recipeArr = results;
-                var recipeImageBytes = [];
                 for (var i = 0; i < recipeArr.length; i++) {
-                    recipeImageBytes = [];
                     var imgPaths = recipeArr[i]["imgPath"].split('`');
 
                     var recipeImageByte = fs.readFileSync(imgPaths[0], 'base64');
-                    recipeImageBytes.push(recipeImageByte);
                     // for (var j = 0; j < imgPaths.length; j++) {}
-                    recipeArr[i].recipeImageBytes = recipeImageBytes;
+                    recipeArr[i].recipeImageByte = recipeImageByte;
                     delete recipeArr[i].imgPath;
                 }
                 res.write(JSON.stringify(recipeArr));
@@ -665,7 +662,7 @@ exports.readIngOutRecipe = function (req, res) {
 exports.readFoodOutRecipe = function (req, res) {
     console.log('who get in here post /readFoodOutRecipe');
     var inputData;
-    const MIN_RECIPE_COUNT = 1;
+    const MIN_RECIPE_COUNT = 10;
 
     req.on('data', (data) => {
         inputData = JSON.parse(data);
