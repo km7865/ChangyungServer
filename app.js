@@ -40,6 +40,10 @@ app.use('/updateIngPrice', manager.updateIngPrice);
 app.use('/readIngPrice', manager.readIngPrice);
 app.use('/updateIngPrice', manager.updateIngPrice);
 
+app.use('/createNotification', manager.createNotification);
+app.use('/deleteNotification', manager.deleteNotification);
+app.use('/readNotification', manager.readNotification);
+
 app.use('/readUserComment', manager.readUserComment);
 app.use('/readUserLikeIn', manager.readUserLikeIn);
 app.use('/readUserLikeOut', manager.readUserLikeOut);

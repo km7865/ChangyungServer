@@ -603,6 +603,60 @@ exports.getIngFromRecipeOut = function(callback){
     });
 }
 
+exports.createNotification = function(userId, recipeInId, type, callback){
+    pool.getConnection(function (err, conn) {
+        if(!err) {
+            var sql = "insert into mydb.notification(userId, recipeInId, type) values(?, ?, ?)"
+            var values = [userId, recipeInId, type];
+            conn.query(sql, values, function(err, results, fields) {
+                if (err) {
+                    console.log(err);
+                    callback("2")
+                }
+                else
+                    callback("1")
+            });
+        }
+        conn.release();
+    });
+}
+
+exports.deleteNotification = function(notificationId, callback){
+    pool.getConnection(function (err, conn) {
+        if(!err) {
+            var sql = "delete from mydb.notification where notificationId = ?"
+            var values = [notificationId];
+            conn.query(sql, values, function(err, results, fields) {
+                if (err) {
+                    console.log(err);
+                    callback("2")
+                }
+                else
+                    callback("1")
+            });
+        }
+        conn.release();
+    });
+}
+
+exports.getNotification = function(userId, callback){
+    pool.getConnection(function (err, conn) {
+        if(!err) {
+            var sql = "select * from mydb.notification where userId = ?"
+            var values = [userId];
+            conn.query(sql, values, function(err, results, fields) {
+                if (err) {
+                    console.log(err);
+                    callback("2")
+                }
+                else
+                    callback(results)
+            });
+        }
+        conn.release();
+    });
+}
+
 exports.getUserComment = function(userId, callback){
     pool.getConnection(function (err, conn) {
         if(!err) {

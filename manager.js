@@ -775,7 +775,6 @@ async function uploadIngPrice(ing){
     if(product.length == 0)
         return -1;
     product.forEach(function(text){
-        console.log(text)
         splitedStr = text.split('/')
         price_temp = splitedStr[0].replace("원","")
         priceList[i] = price_temp.replace(/,/g, "")
@@ -805,7 +804,6 @@ async function uploadIngPrice(ing){
             var sum = Number(0);
             for(let j = 0; j < priceList.length; j++)
                 sum += Number(priceList[j])
-            console.log("sum : " + sum)
             var priceUnit_temp = sum / priceList.length
             var intSum = parseInt(priceUnit_temp)
             var max = [];
@@ -1067,6 +1065,60 @@ exports.readUserComment = function (req, res) {
                 res.end();
             }
         });
+    });
+}
+
+// 알림 등록
+exports.createNotification = function (req, res) {
+    console.log('who get in here post /createNotification');
+    var inputData;
+
+    req.on('data', (data) => {
+        inputData = JSON.parse(data);
+    });
+
+    req.on('end', () => {
+        db.createNotification(inputData.userId, inputData.recipeInId, inputData.type, (results) => {
+            console.log(results); // 1 : 등록 성공, 2 : 실패
+            res.write(results);
+            res.end();
+        })
+    });
+}
+
+// 알림 삭제
+exports.deleteNotification = function (req, res) {
+    console.log('who get in here post /deleteNotification');
+    var inputData;
+
+    req.on('data', (data) => {
+        inputData = JSON.parse(data);
+    });
+
+    req.on('end', () => {
+        db.deleteNotification(inputData.notificationId, (results) => {
+            console.log(results); // 1 : 삭제 성공, 2 : 실패
+            res.write(results);
+            res.end();
+        })
+    });
+}
+
+// 알림 조회
+exports.readNotification = function (req, res) {
+    console.log('who get in here post /readNotification');
+    var inputData;
+
+    req.on('data', (data) => {
+        inputData = JSON.parse(data);
+    });
+
+    req.on('end', () => {
+        db.getNotification(inputData.userId, (results) => {
+            console.log(results); // 1 : 알림 데이터, 2 : 실패
+            res.write(results);
+            res.end();
+        })
     });
 }
 
