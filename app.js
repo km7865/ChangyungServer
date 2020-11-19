@@ -6,6 +6,7 @@ var manager = require('./manager.js');
 app.use('/se', manager.useTest);
 
 app.use('/reqSearchRecipe', manager.reqSearchRecipe);
+app.use('/reqSearchRecipeIng', manager.reqSearchRecipeIng);
 app.use('/reqBestRecipe', manager.reqBestRecipe);
 app.use('/readUserRecipe', manager.readUserRecipe);
 
@@ -38,6 +39,10 @@ app.use('/readFoodOutRecipe', manager.readFoodOutRecipe);
 app.use('/updateIngPrice', manager.updateIngPrice);
 app.use('/readIngPrice', manager.readIngPrice);
 app.use('/updateIngPrice', manager.updateIngPrice);
+
+app.use('/createNotification', manager.createNotification);
+app.use('/deleteNotification', manager.deleteNotification);
+app.use('/readNotification', manager.readNotification);
 
 app.use('/readUserComment', manager.readUserComment);
 app.use('/readUserLikeIn', manager.readUserLikeIn);

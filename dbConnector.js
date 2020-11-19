@@ -18,8 +18,45 @@ exports.select = function(callback) {
 
 //--------------------------------------------
 
-exports.searchRecipeList = function(userId, pw, callback) {
+// 요리기반 내부레시피 조회
+exports.searchRecipeList = function(title, callback) {
+    pool.getConnection(function (err, conn) {
+        if (!err) {
+            var sql = "SELECT * FROM mydb.recipeIn WHERE title LIKE " + "'%" + title + "%'";
+            conn.query(sql, function (err, results) {
+                if (err) {
+                    console.log(err);
+                    callback("2");
+                } else {
+                    callback(results);
+                }
+            });
+        }
+        conn.release();
+    });
+}
+// 재료기반 내부레시피 조회
+exports.searchRecipeListIng = function(ingredients, callback) {
+    let sql = "SELECT * FROM mydb.recipeIn WHERE ";
+    for (let i = 0; i < ingredients.length; i++) {
+        if (i) sql += "and ";
+        sql += "ingredient LIKE " + "'%" + ingredients[i] + "%' ";
+        console.log(sql);
+    }
 
+    pool.getConnection(function (err, conn) {
+        if (!err) {
+            conn.query(sql, function (err, results) {
+                if (err) {
+                    console.log(err);
+                    callback("2");
+                } else {
+                    callback(results);
+                }
+            });
+        }
+        conn.release();
+    });
 }
 
 exports.searchBestRecipeList = function(year, month, callback) {
@@ -289,7 +326,6 @@ exports.readRecipeDetail = function (recipeInId, callback) {
         conn.release();
     });
 }
-
 
 exports.createComment = function(recipeInId, userId, content, uploadDate, callback) {
     pool.getConnection(function (err, conn) {
@@ -573,6 +609,60 @@ exports.getIngFromRecipeOut = function(callback){
     });
 }
 
+exports.createNotification = function(userId, recipeInId, type, callback){
+    pool.getConnection(function (err, conn) {
+        if(!err) {
+            var sql = "insert into mydb.notification(userId, recipeInId, type) values(?, ?, ?)"
+            var values = [userId, recipeInId, type];
+            conn.query(sql, values, function(err, results, fields) {
+                if (err) {
+                    console.log(err);
+                    callback("2")
+                }
+                else
+                    callback("1")
+            });
+        }
+        conn.release();
+    });
+}
+
+exports.deleteNotification = function(notificationId, callback){
+    pool.getConnection(function (err, conn) {
+        if(!err) {
+            var sql = "delete from mydb.notification where notificationId = ?"
+            var values = [notificationId];
+            conn.query(sql, values, function(err, results, fields) {
+                if (err) {
+                    console.log(err);
+                    callback("2")
+                }
+                else
+                    callback("1")
+            });
+        }
+        conn.release();
+    });
+}
+
+exports.getNotification = function(userId, callback){
+    pool.getConnection(function (err, conn) {
+        if(!err) {
+            var sql = "select * from mydb.notification where userId = ?"
+            var values = [userId];
+            conn.query(sql, values, function(err, results, fields) {
+                if (err) {
+                    console.log(err);
+                    callback("2")
+                }
+                else
+                    callback(results)
+            });
+        }
+        conn.release();
+    });
+}
+
 exports.getUserComment = function(userId, callback){
     pool.getConnection(function (err, conn) {
         if(!err) {
@@ -628,6 +718,112 @@ exports.getUserLikeOut = function(userId, callback){
                 }
                 console.log("ok");
                 callback(results)
+            });
+        }
+        conn.release();
+    });
+}
+
+// 외부 레시피 등록
+exports.createRecipeOut = function(link, title, ingredient, callback)  {
+    pool.getConnection(function (err, conn) {
+        if (!err) {
+            var sql = "INSERT INTO mydb.recipeOut(link, title, ingredient, mainImg) "
+                + "VALUES(?, ?, ?, '.')";
+            var values = [link, title, ingredient];
+
+            conn.query(sql, values, function (err) {
+                if (err) {
+                    console.log(err);
+                    callback("2");
+                } else {
+                    conn.query("select LAST_INSERT_ID();", function (err, results) {
+                        callback(results[0]["LAST_INSERT_ID()"]);
+                    });
+                }
+            });
+        }
+        else console.log(err);
+        conn.release();
+    });
+}
+
+// 외부 레시피 대표 이미지 경로 갱신
+exports.updateImgPathOut = function (recipeOutId, imgPath, callback) {
+    pool.getConnection(function (err, conn) {
+        if (!err) {
+            let sql = "UPDATE mydb.recipeOut SET mainImg = ? WHERE recipeOutId = ?";
+            let values = [imgPath, recipeOutId];
+            conn.query(sql, values, function (err) {
+                if (err) {
+                    console.log(err);
+                    callback("2")
+                } else callback("1")
+            });
+        }
+        conn.release();
+    });
+}
+
+// 외부 레시피 링크 존재 여부 확인
+exports.checkLink = function (link, callback) {
+    pool.getConnection(function (err, conn) {
+        if (!err) {
+            let sql = "SELECT * FROM mydb.recipeOut WHERE link = ?";
+            let values = [link];
+            conn.query(sql, values, function (err, results) {
+                if (err) {
+                    console.log(err);
+                    callback("2")
+                }
+
+                let len = results.length
+
+                if(len == 0)
+                    callback("3")
+                else
+                    callback("1")
+            });
+        }
+        conn.release();
+    });
+}
+
+// 요리기반 외부레시피 조회
+exports.searchRecipeOutList = function(title, callback) {
+    pool.getConnection(function (err, conn) {
+        if (!err) {
+            var sql = "SELECT * FROM mydb.recipeOut WHERE title LIKE " + "'%" + title + "%'";
+            conn.query(sql, function (err, results) {
+                if (err) {
+                    console.log(err);
+                    callback("2");
+                } else {
+                    callback(results);
+                }
+            });
+        }
+        conn.release();
+    });
+}
+
+// 재료기반 외부레시피 조회
+exports.searchRecipeOutListIng = function(ingredients, callback) {
+    let sql = "SELECT * FROM mydb.recipeOut WHERE ";
+    for (let i = 0; i < ingredients.length; i++) {
+        if (i) sql += "and ";
+        sql += "ingredient LIKE " + "'%" + ingredients[i] + "%' ";
+    }
+
+    pool.getConnection(function (err, conn) {
+        if (!err) {
+            conn.query(sql, function (err, results) {
+                if (err) {
+                    console.log(err);
+                    callback("2");
+                } else {
+                    callback(results);
+                }
             });
         }
         conn.release();
