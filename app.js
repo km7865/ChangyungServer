@@ -6,6 +6,7 @@ var manager = require('./manager.js');
 app.use('/se', manager.useTest);
 
 app.use('/reqSearchRecipe', manager.reqSearchRecipe);
+app.use('/reqSearchRecipeIng', manager.reqSearchRecipeIng);
 app.use('/reqBestRecipe', manager.reqBestRecipe);
 app.use('/readUserRecipe', manager.readUserRecipe);
 
