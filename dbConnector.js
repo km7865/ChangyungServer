@@ -23,7 +23,7 @@ exports.searchRecipeList = function(title, callback) {
     pool.getConnection(function (err, conn) {
         if (!err) {
             var sql = "SELECT * FROM mydb.recipeIn WHERE title LIKE " + "'%" + title + "%'";
-            conn.query(sql, function (err, results, fields) {
+            conn.query(sql, function (err, results) {
                 if (err) {
                     console.log(err);
                     callback("2");
@@ -35,12 +35,18 @@ exports.searchRecipeList = function(title, callback) {
         conn.release();
     });
 }
-// 재료기반 내부레시피 조회 (미완성)
-exports.searchRecipeListIng = function(ingredient, callback) {
+// 재료기반 내부레시피 조회
+exports.searchRecipeListIng = function(ingredients, callback) {
+    let sql = "SELECT * FROM mydb.recipeIn WHERE ";
+    for (let i = 0; i < ingredients.length; i++) {
+        if (i) sql += "and ";
+        sql += "ingredient LIKE " + "'%" + ingredients[i] + "%' ";
+        console.log(sql);
+    }
+
     pool.getConnection(function (err, conn) {
         if (!err) {
-            var sql = "SELECT * FROM mydb.recipeIn WHERE ingredient LIKE " + "'%" + ingredient + "%'";
-            conn.query(sql, function (err, results, fields) {
+            conn.query(sql, function (err, results) {
                 if (err) {
                     console.log(err);
                     callback("2");
@@ -801,11 +807,16 @@ exports.searchRecipeOutList = function(title, callback) {
     });
 }
 
-// 재료기반 외부레시피 조회 (미완성)
-exports.searchRecipeOutListIng = function(ingredient, callback) {
+// 재료기반 외부레시피 조회
+exports.searchRecipeOutListIng = function(ingredients, callback) {
+    let sql = "SELECT * FROM mydb.recipeOut WHERE ";
+    for (let i = 0; i < ingredients.length; i++) {
+        if (i) sql += "and ";
+        sql += "ingredient LIKE " + "'%" + ingredients[i] + "%' ";
+    }
+
     pool.getConnection(function (err, conn) {
         if (!err) {
-            var sql = "SELECT * FROM mydb.recipeOut WHERE ingredient LIKE " + "'%" + ingredient + "%'";
             conn.query(sql, function (err, results) {
                 if (err) {
                     console.log(err);

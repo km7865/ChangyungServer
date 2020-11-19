@@ -1,4 +1,5 @@
 var db = require('./dbConnector.js');
+const fs = require("fs");
 const axios = require("axios");
 const cheerio = require("cheerio");
 const request = require("request");
@@ -67,19 +68,11 @@ exports.reqSearchRecipe = function (req, res) {
             if (results == 2) {
                 res.write(results);
             } else {
-                console.log("searchRecipeList");
-                var recipeArr = results;
-                var recipeImageBytes = [];
-                for (var i = 0; i < recipeArr.length; i++) {
-                    recipeImageBytes = [];
-                    var imgPaths = recipeArr[i]["imgPath"].split('`');
-                    console.log(recipeArr[i]['title']);
-                    console.log(imgPaths[0]);
-
-                    var recipeImageByte = fs.readFileSync(imgPaths[0], 'base64');
-                    recipeImageBytes.push(recipeImageByte);
-                    // for (var j = 0; j < imgPaths.length; j++) {}
-                    recipeArr[i].recipeImageBytes = recipeImageBytes;
+                let recipeArr = results;
+                for (let i = 0; i < recipeArr.length; i++) {
+                    let imgPaths = recipeArr[i]["imgPath"].split('`');
+                    let recipeImageByte = fs.readFileSync(imgPaths[0], 'base64');
+                    recipeArr[i].recipeImageByte = recipeImageByte;
                     delete recipeArr[i].imgPath;
                 }
                 res.write(JSON.stringify(recipeArr));
@@ -89,7 +82,7 @@ exports.reqSearchRecipe = function (req, res) {
     });
 }
 
-// 재료기반 내부레시피 검색 (미완성)
+// 재료기반 내부레시피 검색
 exports.reqSearchRecipeIng = function (req, res) {
     console.log('who get in here post /reqSearchRecipeIng');
     var inputData;
@@ -99,24 +92,17 @@ exports.reqSearchRecipeIng = function (req, res) {
     });
 
     req.on('end', () => {
+        let ingredients = inputData.ingredient.split("`");
 
-        db.searchRecipeListIng(inputData.ingredient, (results) => {
-            if (results == 2) {
-                res.write(results);
+        db.searchRecipeListIng(ingredients, (results) => {
+            if (results == "2") {
+                res.write("2");
             } else {
-                console.log("searchRecipeListIng");
-                var recipeArr = results;
-                var recipeImageBytes = [];
-                for (var i = 0; i < recipeArr.length; i++) {
-                    recipeImageBytes = [];
-                    var imgPaths = recipeArr[i]["imgPath"].split('`');
-                    console.log(recipeArr[i]['ingredient']);
-                    console.log(imgPaths[0]);
-
-                    var recipeImageByte = fs.readFileSync(imgPaths[0], 'base64');
-                    recipeImageBytes.push(recipeImageByte);
-                    // for (var j = 0; j < imgPaths.length; j++) {}
-                    recipeArr[i].recipeImageBytes = recipeImageBytes;
+                let recipeArr = results;
+                for (let i = 0; i < recipeArr.length; i++) {
+                    let imgPaths = recipeArr[i]["imgPath"].split('`');
+                    let recipeImageByte = fs.readFileSync(imgPaths[0], 'base64');
+                    recipeArr[i].recipeImageByte = recipeImageByte;
                     delete recipeArr[i].imgPath;
                 }
                 res.write(JSON.stringify(recipeArr));
@@ -184,16 +170,11 @@ exports.readUserRecipe = function (req, res) {
             if (results == "2") {
                 res.write(results);
             } else {
-                var recipeArr = results;
-                var recipeImageBytes = [];
-                for (var i = 0; i < recipeArr.length; i++) {
-                    recipeImageBytes = [];
-                    var imgPaths = recipeArr[i]["imgPath"].split('`');
-
-                    var recipeImageByte = fs.readFileSync(imgPaths[0], 'base64');
-                    recipeImageBytes.push(recipeImageByte);
-                    // for (var j = 0; j < imgPaths.length; j++) {}
-                    recipeArr[i].recipeImageBytes = recipeImageBytes;
+                let recipeArr = results;
+                for (let i = 0; i < recipeArr.length; i++) {
+                    let imgPaths = recipeArr[i]["imgPath"].split('`');
+                    let recipeImageByte = fs.readFileSync(imgPaths[0], 'base64');
+                    recipeArr[i].recipeImageByte = recipeImageByte;
                     delete recipeArr[i].imgPath;
                 }
                 res.write(JSON.stringify(recipeArr));
@@ -638,7 +619,7 @@ exports.readRecipeDetail = function (req, res) {
 exports.updateSetting = function (req, res) {
 }
 
-// 재료기반 외부레시피 검색(조회) (미완성)
+// 재료기반 외부레시피 검색(조회)
 exports.readIngOutRecipe = function (req, res) {
     console.log('who get in here post /readIngOutRecipe');
     var inputData;
@@ -648,13 +629,26 @@ exports.readIngOutRecipe = function (req, res) {
     });
 
     req.on('end', () => {
-        const ingredients = inputData.ingredient.split('`');
-        console.log(inputData.ingredient);
-        for (let i = 0; i < ingredients.length; i++)
-            console.log(ingredients[i]);
+        let ingredients = inputData.ingredient.split('`');
 
-        res.write("1");
-        res.end();
+        db.searchRecipeOutListIng(ingredients, (results) => {
+            let recipeArr = results;
+            if (results == "2") {
+                res.write("2");
+            } else {
+                console.log(results.length);
+                for (let i = 0; i < recipeArr.length; i++) {
+                    let imgPath = recipeArr[i]["mainImg"];
+                    console.log(recipeArr[i]['title']);
+                    let recipeImageByte = fs.readFileSync(imgPath, 'base64');
+
+                    recipeArr[i].recipeImageByte = recipeImageByte;
+                    delete recipeArr[i].mainImg;
+                }
+                res.write(JSON.stringify(recipeArr));
+            }
+            res.end();
+        });
     });
 }
 
