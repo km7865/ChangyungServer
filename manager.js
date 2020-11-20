@@ -1068,7 +1068,7 @@ exports.createNotification = function (req, res) {
     var inputData;
 
     req.on('data', (data) => {
-        inputData = JSON.parse(data);
+        inputData = JSON.parse(data);   // type = 1 : 댓글, 2 : 좋아요
     });
 
     req.on('end', () => {
