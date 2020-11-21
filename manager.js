@@ -130,24 +130,18 @@ exports.reqBestRecipe = function (req, res) {
         //inputData = req.query
         db.searchBestRecipeList(year, month, (results) => {
             console.log(results); // 2 : 에러 , 3 : 레시피 갯수 0개
-            if(results == "2" || results == "3")
-            {
+            if (results == "2" || results == "3") {
                 res.write(results);
                 res.end();
             } else {
-                var commentArr = results;
-                var recipeImageBytes = [];
-                for (var i = 0; i < commentArr.length; i++) {
-                    recipeImageBytes = [];
-                    var imgPaths = commentArr[i]["imgPath"].split('`');
-                    var imgPath = new Object();
-                    imgPath.recipeImageByte = fs.readFileSync(imgPaths[0], 'base64');
-                    recipeImageBytes.push(imgPath);
-
-                    commentArr[i].recipeImageBytes = recipeImageBytes;
-                    delete commentArr[i].imgPath;
+                let recipeArr = results;
+                for (let i = 0; i < recipeArr.length; i++) {
+                    let imgPaths = recipeArr[i]["imgPath"].split('`');
+                    let recipeImageByte = fs.readFileSync(imgPaths[0], 'base64');
+                    recipeArr[i].recipeImageByte = recipeImageByte;
+                    delete recipeArr[i].imgPath;
                 }
-                res.write(JSON.stringify(commentArr));
+                res.write(JSON.stringify(recipeArr));
                 res.end();
             }
         });
@@ -202,8 +196,7 @@ exports.createComment = function (req, res) {
 
         db.createComment(recipeInId, userId, content, uploadDate, (results) => {
             console.log(results); // 1 : 성공, 2 : 실패
-            if(results == "1")
-            {
+            if (results == "1") {
                 db.createNotification(userId, recipeInId, 1, (results) => {
                     res.write("1");
                 });
@@ -240,6 +233,7 @@ exports.readComment = function (req, res) {
     });
 
     req.on('end', () => {
+        console.log("inputData.recipeInId : " + inputData.recipeInId);
         db.getComment(inputData.recipeInId, (results) => {
             console.log(results); // 1 : 댓글 데이터, 2 : 실패
             res.write(JSON.stringify(results));
@@ -266,8 +260,7 @@ exports.createLikeIn = function (req, res) {
         db.createLikeIn(recipeInId, userId, uploadDate, (results) => {
             console.log(results); // 1 : 성공, 2 : 실패
 
-            if(results == "1")
-            {
+            if (results == "1") {
                 db.createNotification(userId, recipeInId, 1, (results) => {
                     res.write("1");
                     res.end();
@@ -614,7 +607,7 @@ exports.readRecipeDetail = function (req, res) {
     req.on('end', () => {
         var fs = require('fs'); //File System 모듈 불러오기
 
-        db.readRecipeDetail(inputData.recipeInId,(results) => {
+        db.readRecipeDetail(inputData.recipeInId, (results) => {
             if (results == "2") {
                 res.write(results);
             } else {
@@ -673,6 +666,7 @@ exports.readIngOutRecipe = function (req, res) {
     });
 }
 
+
 // 요리기반 외부레시피 검색(조회)
 exports.readFoodOutRecipe = function (req, res) {
     console.log('who get in here post /readFoodOutRecipe');
@@ -695,52 +689,60 @@ exports.readFoodOutRecipe = function (req, res) {
                 res.write("2");
             } else {
                 let recipeArr = results;
-                if (results.length >= MIN_RECIPE_COUNT) {
-                    console.log("recipeOut enough!");
-                    for (let i = 0; i < recipeArr.length; i++) {
-                        let imgPath = recipeArr[i]["mainImg"];
-                        console.log(recipeArr[i]['title']);
-                        let recipeImageByte = fs.readFileSync(imgPath, 'base64');
+                let imgPathArr = [];
 
-                        recipeArr[i].recipeImageByte = recipeImageByte;
-                        delete recipeArr[i].mainImg;
-                    }
-                    res.write(JSON.stringify(recipeArr));
-                    res.end();
-                } else {
-                    const searchUrl = "https://www.10000recipe.com/recipe/list.html?q=" + encodeURI(title);
-
-                    // 함수 설명
-                    // 1. getPages      : 검색된 레시피 결과의 개수로 크롤링할 페이지수 구하기 (1 페이지당 최대 40개의 레시피)
-                    // 2. getPageUrls   : 1차(getPageUrl) - 해당 페이지에서 조건을 만족하는 레시피 url 배열(linkArr)로 반환
-                    //                  : 2차(getPageUrls) - linkArr 들로 이루어진 2차원 배열 linkArrays 로 반환
-                    // 3. getRecipes    : 1차(getRecipe) - 해당 레시피의 링크, 제목, 재료, 이미지 주소를 딕셔너리(recipe)로 반환
-                    //                  : 2차(getRecipes) - recipe 들로 이루어진 배열 recipes 로 반환
-                    // 4. saveRecipes   : recipes 레시피 정보를 데이터베이스에 저장
-                    //                  : 레시피의 링크, 제목, 재료를 우선적으로 저장한 뒤 recipeOutId를 얻어 이미지 다운로드 및 이미지 경로 갱신
-
-                    getPages(searchUrl)
-                        .then(getPageUrls)
-                        .then(checkUrls)
-                        .then(getRecipes)
-                        .then(saveRecipes)
-                        .then((recipes) => {
-                            if (recipes.length == 0) {
-                                if (recipeArr.length == 0) res.write("3"); // 레시피 없음
-                                else res.write(JSON.stringify(recipeArr));
-                            } else {
-                                // 클라이언트에 recipe list 전송
-                                // JSON 형식
-                                // 'title' : 레시피 제목
-                                // 'link' : 레시피 링크
-                                // 'ingredient' : 레시피 재료
-                                // 'recipeImageByte' : 레시피 대표 이미지
-                                recipeArr.concat(recipes);
-                                res.write(JSON.stringify(recipeArr));
-                            }
-                            res.end();
-                        });
+                console.log("recipeOut enough!");
+                for (let i = 0; i < recipeArr.length; i++) {
+                    let imgPath = recipeArr[i]["mainImg"];
+                    imgPathArr.push(imgPath);
+                    delete recipeArr[i].mainImg;
                 }
+
+                readFiles(imgPathArr)
+                    .then((imgArr) => {
+                        for (let i = 0; i < recipeArr.length; i++) {
+                            recipeArr[i]['recipeImageByte'] = imgArr[i];
+                            console.log(recipeArr[i]['recipeImageByte'].length);
+                        }
+
+                        if (recipeArr.length >= MIN_RECIPE_COUNT) {
+                            res.write(JSON.stringify(recipeArr));
+                            res.end();
+                        } else {
+                            const searchUrl = "https://www.10000recipe.com/recipe/list.html?q=" + encodeURI(title);
+
+                            // 함수 설명
+                            // 1. getPages      : 검색된 레시피 결과의 개수로 크롤링할 페이지수 구하기 (1 페이지당 최대 40개의 레시피)
+                            // 2. getPageUrls   : 1차(getPageUrl) - 해당 페이지에서 조건을 만족하는 레시피 url 배열(linkArr)로 반환
+                            //                  : 2차(getPageUrls) - linkArr 들로 이루어진 2차원 배열 linkArrays 로 반환
+                            // 3. getRecipes    : 1차(getRecipe) - 해당 레시피의 링크, 제목, 재료, 이미지 주소를 딕셔너리(recipe)로 반환
+                            //                  : 2차(getRecipes) - recipe 들로 이루어진 배열 recipes 로 반환
+                            // 4. saveRecipes   : recipes 레시피 정보를 데이터베이스에 저장
+                            //                  : 레시피의 링크, 제목, 재료를 우선적으로 저장한 뒤 recipeOutId를 얻어 이미지 다운로드 및 이미지 경로 갱신
+
+                            getPages(searchUrl)
+                                .then(getPageUrls)
+                                .then(checkUrls)
+                                .then(getRecipes)
+                                .then(saveRecipes)
+                                .then((recipes) => {
+                                    if (recipes.length == 0) {
+                                        if (recipeArr.length == 0) res.write("3"); // 레시피 없음
+                                        else res.write(JSON.stringify(recipeArr));
+                                    } else {
+                                        // 클라이언트에 recipe list 전송
+                                        // JSON 형식
+                                        // 'title' : 레시피 제목
+                                        // 'link' : 레시피 링크
+                                        // 'ingredient' : 레시피 재료
+                                        // 'recipeImageByte' : 레시피 대표 이미지
+                                        recipeArr.concat(recipes);
+                                        res.write(JSON.stringify(recipeArr));
+                                    }
+                                    res.end();
+                                });
+                        }
+                    });
             }
         });
     });
@@ -761,7 +763,7 @@ exports.readFoodOutRecipe = function (req, res) {
 }*/
 
 // 크롤링 후 결과값인 재료값을 DB에 등록
-async function uploadIngPrice(ing){
+async function uploadIngPrice(ing) {
     var key = ing
     const url = "http://search.danawa.com/dsearch.php?query=" + encodeURI(key) +
         "&originalQuery=" + encodeURI(key) + "&cate_c1=46803&volumeType=allvs&page=1&limit=15" +
@@ -779,34 +781,31 @@ async function uploadIngPrice(ing){
     const page = await browser.newPage();
     await page.goto(
         url,
-        { waitUntil: "networkidle2" }
+        {waitUntil: "networkidle2"}
     );
     await page.waitFor(6000);
 
     let product = await page.$$eval(query,
-        e=>e.map((a)=>a.textContent));
+        e => e.map((a) => a.textContent));
 
     console.log("length : " + product.length)
-    if(product.length == 0)
+    if (product.length == 0)
         return -1;
-    product.forEach(function(text){
+    product.forEach(function (text) {
         splitedStr = text.split('/')
-        price_temp = splitedStr[0].replace("원","")
+        price_temp = splitedStr[0].replace("원", "")
         priceList[i] = price_temp.replace(/,/g, "")
         var unit_temp = splitedStr[1]
 
-        if(unitList.length == 0 && unit_temp != null) {
+        if (unitList.length == 0 && unit_temp != null) {
             unitList[0] = unit_temp
             unitCnt[0] = 1
-        }
-
-        else {
+        } else {
             var l = 0;
-            unitList.forEach(function (f)
-            {
-                if(f == unit_temp)
+            unitList.forEach(function (f) {
+                if (f == unit_temp)
                     unitCnt[l]++
-                else if(unit_temp != null) {
+                else if (unit_temp != null) {
                     unitList[unitList.length] = unit_temp
                     unitCnt[unitCnt.length] = 1
                 }
@@ -814,10 +813,9 @@ async function uploadIngPrice(ing){
             })
         }
 
-        if(i == product.length - 1)
-        {
+        if (i == product.length - 1) {
             var sum = Number(0);
-            for(let j = 0; j < priceList.length; j++)
+            for (let j = 0; j < priceList.length; j++)
                 sum += Number(priceList[j])
             var priceUnit_temp = sum / priceList.length
             var intSum = parseInt(priceUnit_temp)
@@ -826,12 +824,12 @@ async function uploadIngPrice(ing){
 
             var k = 0;
             unitCnt.forEach(function (g) {
-                if(g > max[1]){
+                if (g > max[1]) {
                     max[1] = g
                     max[0] = unitList[k]
                 }
 
-                if(k == unitList.length - 1) {
+                if (k == unitList.length - 1) {
                     var priceUnit = intSum + "(원)/" + max[0];
                     console.log(priceUnit)
                     db.createIngPrice(ing, priceUnit, (results) => {
@@ -959,13 +957,12 @@ exports.readIngPrice = function (req, res) {
     req.on('end', () => {
         ingData = inputData.ingredient.split("`")
         var i = 0;
-        ingData.forEach(function (e){
+        ingData.forEach(function (e) {
             db.checkIngPrice(e, (results) => {
                 if (results == "2") {
                     res.write(results);
                     res.end();
-                }
-                else{
+                } else {
                     if (results == "1")
                         uploadIngPrice(e).then(() => {
 
@@ -975,15 +972,14 @@ exports.readIngPrice = function (req, res) {
                         if (results == "2") {
                             res.write(results);
                             res.end();
-                        }
-                        else
+                        } else
                             ingPrice = ingPrice + results + "`"
 
                     })
                 }
             })
 
-            if(i == ingData.length - 1) {
+            if (i == ingData.length - 1) {
                 console.log("ingPrice : " + ingPrice);
                 res.write(JSON.stringify(ingPrice));
                 res.end();
@@ -1007,36 +1003,33 @@ exports.updateIngPrice = function (req, res) {
 
     req.on('end', () => {
         db.getIngFromRecipeIn((results) => {
-            if(results == "2") {
+            if (results == "2") {
                 res.write(results);
                 res.end();
-            }
-            else {
+            } else {
                 db.getIngFromRecipeOut((results2) => {
-                    if(results2 == "2") {
+                    if (results2 == "2") {
                         res.write(results);
                         res.end();
-                    }
-                    else {
+                    } else {
                         resultsSum = results.concat(results2)
                         var i = 0;
                         var j = 0;
-                        resultsSum.forEach(function (e){
+                        resultsSum.forEach(function (e) {
                             var temp = e.ingredient.split("`")
-                            temp.forEach(function(f) {
+                            temp.forEach(function (f) {
                                 ingArray[j] = f
                                 j++
                             })
-                            if(i == resultsSum.length - 1) {
+                            if (i == resultsSum.length - 1) {
                                 console.log(ingArray)
                                 setArray = Array.from(new Set(ingArray))
-                                setArray.forEach(function(g) {
+                                setArray.forEach(function (g) {
                                     db.checkIngPrice(g, (results) => {
                                         if (results == "2") {
                                             res.write(results);
                                             res.end();
-                                        }
-                                        else{
+                                        } else {
                                             if (results == "1")
                                                 uploadIngPrice(g)
                                         }
@@ -1356,7 +1349,6 @@ function getRecipe(recipeURL) {
                 recipe['ingredient'] = ingredient;
                 recipe['imgUrl'] = imgUrl;
 
-                console.log(recipe['title']);
                 resolve(recipe);
             })
             .catch(function (error) {
@@ -1415,4 +1407,22 @@ function saveRecipes(recipes) {
             });
     });
 }
+
+function readFiles(imgPaths) {
+    let promises = [];
+
+    for (let i = 0; i < imgPaths.length; i++) {
+        promises.push(new Promise(function (resolve, reject) {
+            resolve(fs.readFileSync(imgPaths[i], 'base64'));
+        }));
+    }
+
+    return new Promise((resolve, reject) => {
+        Promise.all(promises)
+            .then((imgArr) => {
+                resolve(imgArr);
+            });
+    });
+}
+
 //////////////////////////////////////////////////////////////////////////////////////////////
