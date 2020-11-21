@@ -368,7 +368,7 @@ exports.createComment = function(recipeInId, userId, content, uploadDate, callba
     });
 }
 
-exports.deleteComment = function(commentId, callback){
+exports.deleteComment = function(commentId, recipeInId, callback){
     pool.getConnection(function (err, conn) {
         if(!err) {
             var sql = "delete from mydb.recipecomment where commentId=?"

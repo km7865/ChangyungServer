@@ -222,7 +222,7 @@ exports.deleteComment = function (req, res) {
     });
 
     req.on('end', () => {
-        db.deleteComment(inputData.commentId, (results) => {
+        db.deleteComment(inputData.commentId, inputData.recipeInId, (results) => {
             console.log(results);   // 1 : 성공, 2 : 실패
             res.write(results);
             res.end();
