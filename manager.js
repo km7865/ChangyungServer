@@ -1122,7 +1122,7 @@ exports.readNotification = function (req, res) {
     req.on('end', () => {
         db.getNotification(inputData.userId, (results) => {
             console.log(results); // 1 : 알림 데이터, 2 : 실패
-            res.write(results);
+            res.write(JSON.stringify(results));
             res.end();
         })
     });
