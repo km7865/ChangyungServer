@@ -966,6 +966,7 @@ exports.readIngPrice = function (req, res) {
             })
 
             if(i == ingData.length - 1) {
+                console.log("ingPrice : " + ingPrice);
                 res.write(JSON.stringify(ingPrice));
                 res.end();
             }
@@ -1382,7 +1383,6 @@ function saveRecipes(recipes) {
                                     else resolve(recipes[i]);
                                 });
                             }
-                                .catch(err => alert(err))
                         );
                 }
             });
