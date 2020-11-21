@@ -567,6 +567,11 @@ exports.getIngPrice = function(ingName, callback){
                     console.log(err);
                     callback("2")
                 }
+
+                var len = results.length
+
+                if(len == 0)
+                    callback("3")
                 else
                     callback(results)
             });
@@ -657,6 +662,74 @@ exports.getNotification = function(userId, callback){
                 }
                 else
                     callback(results)
+            });
+        }
+        conn.release();
+    });
+}
+
+exports.checkSetting = function(userId, callback){
+    pool.getConnection(function (err, conn) {
+        if(!err) {
+            var sql = "select * from mydb.setting where userId = ?"
+            var values = [userId];
+            conn.query(sql, values, function(err, results, fields) {
+                if (err) {
+                    console.log(err);
+                    callback("2")
+                }
+                else {
+                    let len = results.length
+
+                    if(len == 0)
+                        callback("3")
+                    else
+                        callback("1")
+                }
+            });
+        }
+        conn.release();
+    });
+}
+
+exports.updateSetting = function(userId, notification, callback){
+    pool.getConnection(function (err, conn) {
+        if(!err) {
+            var sql = "select * from mydb.setting where userId = ?"
+            var values = [userId];
+            conn.query(sql, values, function(err, results, fields) {
+                if (err) {
+                    console.log(err);
+                    callback("2")
+                }
+                else {
+                    let len = results.length
+
+                    if(len == 0) {
+                        sql = "insert into mydb.setting(userId, notification) values(?, ?)"
+                        values = [userId, notification]
+                        conn.query(sql, values, function(err, results, fields) {
+                            if (err) {
+                                console.log(err);
+                                callback("2")
+                            }
+                            else
+                                callback("1")
+                        });
+                    }
+                    else {
+                        sql = "update mydb.setting set notification = ? where userId = ?"
+                        values = [notification, userId]
+                        conn.query(sql, values, function(err, results, fields) {
+                            if (err) {
+                                console.log(err);
+                                callback("2")
+                            }
+                            else
+                                callback("1")
+                        });
+                    }
+                }
             });
         }
         conn.release();

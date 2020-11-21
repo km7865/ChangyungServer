@@ -32,8 +32,6 @@ app.use('/deleteRecipe', manager.deleteRecipe);
 app.use('/readRecipe', manager.readRecipe);
 app.use('/readRecipeDetail', manager.readRecipeDetail);
 
-app.use('/updateSetting', manager.updateSetting);
-
 app.use('/readIngOutRecipe', manager.readIngOutRecipe);
 app.use('/readFoodOutRecipe', manager.readFoodOutRecipe);
 app.use('/updateIngPrice', manager.updateIngPrice);
@@ -43,6 +41,7 @@ app.use('/updateIngPrice', manager.updateIngPrice);
 // app.use('/createNotification', manager.createNotification);
 app.use('/deleteNotification', manager.deleteNotification);
 app.use('/readNotification', manager.readNotification);
+app.use('/updateSetting', manager.updateSetting);
 
 app.use('/readUserComment', manager.readUserComment);
 app.use('/readUserLikeIn', manager.readUserLikeIn);

@@ -197,9 +197,16 @@ exports.createComment = function (req, res) {
         db.createComment(recipeInId, userId, content, uploadDate, (results) => {
             console.log(results); // 1 : 성공, 2 : 실패
             if (results == "1") {
-                db.createNotification(userId, recipeInId, 1, (results) => {
-                    res.write("1");
-                });
+                db.checkSetting(userId, (results) => {
+                    console.log(results); // 1 : 알림 on, 2 : 실패, 3 : 알림 off
+
+                    if(results == "1") {
+                        db.createNotification(userId, recipeInId, 1, (results) => {
+                            res.write("1");
+                            res.end();
+                        });
+                    }
+                })
             }
         });
     });
@@ -261,14 +268,18 @@ exports.createLikeIn = function (req, res) {
             console.log(results); // 1 : 성공, 2 : 실패
 
             if (results == "1") {
-                db.createNotification(userId, recipeInId, 1, (results) => {
-                    res.write("1");
-                    res.end();
-                });
+                db.checkSetting(userId, (results) => {
+                    console.log(results); // 1 : 알림 on, 2 : 실패, 3 : 알림 off
+
+                    if(results == "1") {
+                        db.createNotification(userId, recipeInId, 2, (results) => {
+                            res.write("1");
+                            res.end();
+                        });
+                    }
+                })
             }
-
         });
-
     });
 }
 
@@ -630,9 +641,6 @@ exports.readRecipeDetail = function (req, res) {
     });
 }
 
-exports.updateSetting = function (req, res) {
-}
-
 // 재료기반 외부레시피 검색(조회)
 exports.readIngOutRecipe = function (req, res) {
     console.log('who get in here post /readIngOutRecipe');
@@ -946,7 +954,7 @@ exports.readIngPrice = function (req, res) {
     console.log('who get in here post /readIngPrice');
     var inputData;
     let ingData = [];
-    let ingPrice = '';
+    let ingPrice = new Array();
 
     req.on('data', (data) => {
         inputData = JSON.parse(data);
@@ -957,34 +965,37 @@ exports.readIngPrice = function (req, res) {
     req.on('end', () => {
         ingData = inputData.ingredient.split("`")
         var i = 0;
-        ingData.forEach(function (e) {
+        ingData.forEach(function (e){
+            console.log("ingData.length : " + ingData.length)
             db.checkIngPrice(e, (results) => {
+                console.log("e : " + e)
                 if (results == "2") {
                     res.write(results);
                     res.end();
-                } else {
-                    if (results == "1")
-                        uploadIngPrice(e).then(() => {
-
-                        })
-
+                }
+                else{
                     db.getIngPrice(e, (results) => {
                         if (results == "2") {
                             res.write(results);
                             res.end();
-                        } else
-                            ingPrice = ingPrice + results + "`"
+                        }
 
+                        else if(results == "3") {
+                            ingPrice.push("-")
+                        }
+
+                        else {
+                            ingPrice.push(results)
+
+                            if(i == ingData.length - 1) {
+                                res.write(JSON.stringify(ingPrice));
+                                res.end();
+                            }
+                        }
+                        i++
                     })
                 }
             })
-
-            if (i == ingData.length - 1) {
-                console.log("ingPrice : " + ingPrice);
-                res.write(JSON.stringify(ingPrice));
-                res.end();
-            }
-            i++
         })
     });
 }
@@ -1119,7 +1130,25 @@ exports.readNotification = function (req, res) {
     req.on('end', () => {
         db.getNotification(inputData.userId, (results) => {
             console.log(results); // 1 : 알림 데이터, 2 : 실패
-            res.write(results);
+            res.write(JSON.stringify(results));
+            res.end();
+        })
+    });
+}
+
+// 알림 여부 설정
+exports.updateSetting = function (req, res) {
+    console.log('who get in here post /updateSetting');
+    var inputData;
+
+    req.on('data', (data) => {
+        inputData = JSON.parse(data);   //notification = 0 : 알림 x , 1 : 알림 ok
+    });
+
+    req.on('end', () => {
+        db.getNotification(inputData.userId, inputData.notification, (results) => {
+            console.log(results); // 1 : 알림 데이터, 2 : 실패
+            res.write(JSON.stringify(results));
             res.end();
         })
     });
