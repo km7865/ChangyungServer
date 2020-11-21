@@ -567,6 +567,11 @@ exports.getIngPrice = function(ingName, callback){
                     console.log(err);
                     callback("2")
                 }
+
+                var len = results.length
+
+                if(len == 0)
+                    callback("3")
                 else
                     callback(results)
             });

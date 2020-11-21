@@ -946,7 +946,7 @@ exports.readIngPrice = function (req, res) {
     console.log('who get in here post /readIngPrice');
     var inputData;
     let ingData = [];
-    let ingPrice = '';
+    let ingPrice = new Array();
 
     req.on('data', (data) => {
         inputData = JSON.parse(data);
@@ -957,34 +957,37 @@ exports.readIngPrice = function (req, res) {
     req.on('end', () => {
         ingData = inputData.ingredient.split("`")
         var i = 0;
-        ingData.forEach(function (e) {
+        ingData.forEach(function (e){
+            console.log("ingData.length : " + ingData.length)
             db.checkIngPrice(e, (results) => {
+                console.log("e : " + e)
                 if (results == "2") {
                     res.write(results);
                     res.end();
-                } else {
-                    if (results == "1")
-                        uploadIngPrice(e).then(() => {
-
-                        })
-
+                }
+                else{
                     db.getIngPrice(e, (results) => {
                         if (results == "2") {
                             res.write(results);
                             res.end();
-                        } else
-                            ingPrice = ingPrice + results + "`"
+                        }
 
+                        else if(results == "3") {
+                            ingPrice.push("-")
+                        }
+
+                        else {
+                            ingPrice.push(results)
+
+                            if(i == ingData.length - 1) {
+                                res.write(JSON.stringify(ingPrice));
+                                res.end();
+                            }
+                        }
+                        i++
                     })
                 }
             })
-
-            if (i == ingData.length - 1) {
-                console.log("ingPrice : " + ingPrice);
-                res.write(JSON.stringify(ingPrice));
-                res.end();
-            }
-            i++
         })
     });
 }
