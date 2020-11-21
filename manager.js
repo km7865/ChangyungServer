@@ -1382,7 +1382,6 @@ function saveRecipes(recipes) {
                                     else resolve(recipes[i]);
                                 });
                             }
-                                .catch(err => alert(err))
                         );
                 }
             });
