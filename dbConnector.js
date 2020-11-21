@@ -617,10 +617,10 @@ exports.createNotification = function(userId, recipeInId, type, callback){
             conn.query(sql, values, function(err, results, fields) {
                 if (err) {
                     console.log(err);
-                    callback("2")
+                    callback("12")
                 }
                 else
-                    callback("1")
+                    callback("11")
             });
         }
         conn.release();

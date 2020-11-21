@@ -197,6 +197,10 @@ exports.createComment = function (req, res) {
         //inputData = req.query
         db.createComment(inputData.recipeInId, inputData.userId, inputData.content, inputData.uploadDate, (results) => {
             console.log(results); // 1 : 성공, 2 : 실패
+
+            if(results == 1)
+                results = createNotification(inputData.userId, inputData.recipeInId, 1)
+
             res.write(results);
             res.end();
         });
@@ -252,6 +256,10 @@ exports.createLikeIn = function (req, res) {
         //inputData = req.query
         db.createLikeIn(inputData.recipeInId, inputData.userId, inputData.uploadDate, (results) => {
             console.log(results); // 1 : 성공, 2 : 실패
+
+            if(results == 1)
+                results = createNotification(inputData.userId, inputData.recipeInId, 2)
+
             res.write(results);
             res.end();
         });
@@ -927,14 +935,14 @@ exports.readIngPrice = function (req, res) {
     console.log('who get in here post /readIngPrice');
     var inputData;
     let ingData = [];
-    let ingPrice = new Array();
+    let ingPrice = '';
 
     req.on('data', (data) => {
         inputData = JSON.parse(data);
     });
 
     req.on('end', () => {
-        ingData = inputData.ingredients
+        ingData = inputData.ingredient.split("`")
         var i = 0;
         ingData.forEach(function (e){
             db.checkIngPrice(e, (results) => {
@@ -952,7 +960,7 @@ exports.readIngPrice = function (req, res) {
                             res.end();
                         }
                         else
-                            ingPrice.push(results)
+                            ingPrice = ingPrice + results + "`"
                     })
                 }
             })
@@ -1063,21 +1071,10 @@ exports.readUserComment = function (req, res) {
 }
 
 // 알림 등록
-exports.createNotification = function (req, res) {
-    console.log('who get in here post /createNotification');
-    var inputData;
-
-    req.on('data', (data) => {
-        inputData = JSON.parse(data);   // type = 1 : 댓글, 2 : 좋아요
-    });
-
-    req.on('end', () => {
-        db.createNotification(inputData.userId, inputData.recipeInId, inputData.type, (results) => {
-            console.log(results); // 1 : 등록 성공, 2 : 실패
-            res.write(results);
-            res.end();
-        })
-    });
+function createNotification(userId, recipeInId, type) {
+    db.createNotification(userId, recipeInId, type, (results) => {
+        return results // 11 : 등록 성공, 12 : 실패
+    })
 }
 
 // 알림 삭제
