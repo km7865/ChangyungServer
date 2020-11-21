@@ -197,9 +197,16 @@ exports.createComment = function (req, res) {
         db.createComment(recipeInId, userId, content, uploadDate, (results) => {
             console.log(results); // 1 : 성공, 2 : 실패
             if (results == "1") {
-                db.createNotification(userId, recipeInId, 1, (results) => {
-                    res.write("1");
-                });
+                db.checkSetting(userId, (results) => {
+                    console.log(results); // 1 : 알림 on, 2 : 실패, 3 : 알림 off
+
+                    if(results == "1") {
+                        db.createNotification(userId, recipeInId, 1, (results) => {
+                            res.write("1");
+                            res.end();
+                        });
+                    }
+                })
             }
         });
     });
@@ -261,14 +268,18 @@ exports.createLikeIn = function (req, res) {
             console.log(results); // 1 : 성공, 2 : 실패
 
             if (results == "1") {
-                db.createNotification(userId, recipeInId, 1, (results) => {
-                    res.write("1");
-                    res.end();
-                });
+                db.checkSetting(userId, (results) => {
+                    console.log(results); // 1 : 알림 on, 2 : 실패, 3 : 알림 off
+
+                    if(results == "1") {
+                        db.createNotification(userId, recipeInId, 2, (results) => {
+                            res.write("1");
+                            res.end();
+                        });
+                    }
+                })
             }
-
         });
-
     });
 }
 
@@ -628,9 +639,6 @@ exports.readRecipeDetail = function (req, res) {
             res.end();
         });
     });
-}
-
-exports.updateSetting = function (req, res) {
 }
 
 // 재료기반 외부레시피 검색(조회)
@@ -1121,6 +1129,24 @@ exports.readNotification = function (req, res) {
 
     req.on('end', () => {
         db.getNotification(inputData.userId, (results) => {
+            console.log(results); // 1 : 알림 데이터, 2 : 실패
+            res.write(JSON.stringify(results));
+            res.end();
+        })
+    });
+}
+
+// 알림 여부 설정
+exports.updateSetting = function (req, res) {
+    console.log('who get in here post /updateSetting');
+    var inputData;
+
+    req.on('data', (data) => {
+        inputData = JSON.parse(data);   //notification = 0 : 알림 x , 1 : 알림 ok
+    });
+
+    req.on('end', () => {
+        db.getNotification(inputData.userId, inputData.notification, (results) => {
             console.log(results); // 1 : 알림 데이터, 2 : 실패
             res.write(JSON.stringify(results));
             res.end();
