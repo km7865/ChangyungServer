@@ -195,14 +195,19 @@ exports.createComment = function (req, res) {
 
     req.on('end', () => {
         //inputData = req.query
-        db.createComment(inputData.recipeInId, inputData.userId, inputData.content, inputData.uploadDate, (results) => {
+        let recipeInId = inputData.recipeInId;
+        let userId = inputData.userId;
+        let content = inputData.content;
+        let uploadDate = inputData.uploadDate;
+
+        db.createComment(recipeInId, userId, content, uploadDate, (results) => {
             console.log(results); // 1 : 성공, 2 : 실패
-
-            if(results == 1)
-                results = createNotification(inputData.userId, inputData.recipeInId, 1)
-
-            res.write(results);
-            res.end();
+            if(results == "1")
+            {
+                db.createNotification(userId, recipeInId, 1, (results) => {
+                    res.write("1");
+                });
+            }
         });
     });
 }
@@ -254,15 +259,23 @@ exports.createLikeIn = function (req, res) {
 
     req.on('end', () => {
         //inputData = req.query
-        db.createLikeIn(inputData.recipeInId, inputData.userId, inputData.uploadDate, (results) => {
+        let recipeInId = inputData.recipeInId;
+        let userId = inputData.userId;
+        let uploadDate = inputData.uploadDate;
+
+        db.createLikeIn(recipeInId, userId, uploadDate, (results) => {
             console.log(results); // 1 : 성공, 2 : 실패
 
-            if(results == 1)
-                results = createNotification(inputData.userId, inputData.recipeInId, 2)
+            if(results == "1")
+            {
+                db.createNotification(userId, recipeInId, 1, (results) => {
+                    res.write("1");
+                    res.end();
+                });
+            }
 
-            res.write(results);
-            res.end();
         });
+
     });
 }
 
@@ -941,6 +954,8 @@ exports.readIngPrice = function (req, res) {
         inputData = JSON.parse(data);
     });
 
+    // 1. 입력 받은 재료들이 DB에 있는지 확인 후
+
     req.on('end', () => {
         ingData = inputData.ingredient.split("`")
         var i = 0;
@@ -952,7 +967,9 @@ exports.readIngPrice = function (req, res) {
                 }
                 else{
                     if (results == "1")
-                        uploadIngPrice(e)
+                        uploadIngPrice(e).then(() => {
+
+                        })
 
                     db.getIngPrice(e, (results) => {
                         if (results == "2") {
@@ -961,6 +978,7 @@ exports.readIngPrice = function (req, res) {
                         }
                         else
                             ingPrice = ingPrice + results + "`"
+
                     })
                 }
             })
