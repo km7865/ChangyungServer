@@ -338,8 +338,30 @@ exports.createComment = function(recipeInId, userId, content, uploadDate, callba
                     console.log(err);
                     callback("2")
                 }
-                console.log("ok");
-                callback("1")
+                else {
+                    sql = "select * from mydb.recipecomment where recipeInId = ?"
+                    values = [recipeInId]
+                    conn.query(sql, values, function(err, results, fields) {
+                        if (err) {
+                            console.log(err);
+                            callback("2")
+                        }
+                        else {
+                            var commentCnt = results.length
+
+                            sql = "update mydb.recipein set commentCount = ? where recipeInId = ?"
+                            values = [commentCnt, recipeInId]
+                            conn.query(sql, values, function(err, results, fields) {
+                                if (err) {
+                                    console.log(err);
+                                    callback("2")
+                                }
+                                else
+                                    callback("1")
+                            });
+                        }
+                    });
+                }
             });
         }
         conn.release();
@@ -356,8 +378,30 @@ exports.deleteComment = function(commentId, callback){
                     console.log(err);
                     callback("2")
                 }
-                console.log("ok");
-                callback("1")
+                else {
+                    sql = "select * from mydb.recipecomment where recipeInId = ?"
+                    values = [recipeInId]
+                    conn.query(sql, values, function(err, results, fields) {
+                        if (err) {
+                            console.log(err);
+                            callback("2")
+                        }
+                        else {
+                            var commentCnt = results.length
+
+                            sql = "update mydb.recipein set commentCount = ? where recipeInId = ?"
+                            values = [commentCnt, recipeInId]
+                            conn.query(sql, values, function(err, results, fields) {
+                                if (err) {
+                                    console.log(err);
+                                    callback("2")
+                                }
+                                else
+                                    callback("1")
+                            });
+                        }
+                    });
+                }
             });
         }
         conn.release();
@@ -393,8 +437,30 @@ exports.createLikeIn = function(recipeInId, userId, uploadDate, callback){
                     console.log(err);
                     callback("2")
                 }
-                console.log("ok");
-                callback("1")
+                else {
+                    sql = "select * from mydb.likein where recipeInId = ?"
+                    values = [recipeInId]
+                    conn.query(sql, values, function(err, results, fields) {
+                        if (err) {
+                            console.log(err);
+                            callback("2")
+                        }
+                        else {
+                            var likeCnt = results.length
+
+                            sql = "update mydb.recipein set likeCount = ? where recipeInId = ?"
+                            values = [likeCnt, recipeInId]
+                            conn.query(sql, values, function(err, results, fields) {
+                                if (err) {
+                                    console.log(err);
+                                    callback("2")
+                                }
+                                else
+                                    callback("1")
+                            });
+                        }
+                    });
+                }
             });
         }
         conn.release();
@@ -411,8 +477,30 @@ exports.deleteLikeIn = function(recipeInId, userId, callback){
                     console.log(err);
                     callback("2")
                 }
-                console.log("ok");
-                callback("1")
+                else {
+                    sql = "select * from mydb.likein where recipeInId = ?"
+                    values = [recipeInId]
+                    conn.query(sql, values, function(err, results, fields) {
+                        if (err) {
+                            console.log(err);
+                            callback("2")
+                        }
+                        else {
+                            var likeCnt = results.length
+
+                            sql = "update mydb.recipein set likeCount = ? where recipeInId = ?"
+                            values = [likeCnt, recipeInId]
+                            conn.query(sql, values, function(err, results, fields) {
+                                if (err) {
+                                    console.log(err);
+                                    callback("2")
+                                }
+                                else
+                                    callback("1")
+                            });
+                        }
+                    });
+                }
             });
         }
         conn.release();
