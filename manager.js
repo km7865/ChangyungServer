@@ -497,8 +497,7 @@ exports.createRecipe = function (req, res) {
                         fs.writeFile(imgPath, bitmap, (err) => {
                             if (err) {
                                 throw err;
-                                console.log('write Failed!');
-                            } else console.log('write Complete!');
+                            }
                         });
                     }
 
@@ -535,7 +534,7 @@ exports.updateRecipe = function (req, res) {
             fs.writeFile(imgPath, bitmap, (err) => {
                 if (err) {
                     throw err;
-                } else console.log('write Complete!');
+                }
             });
         }
 
@@ -634,7 +633,7 @@ exports.readRecipeDetail = function (req, res) {
                 delete recipe.imgPath;
 
                 res.write(JSON.stringify(recipe));
-                console.log("read complete!");
+
             }
             res.end();
         });
@@ -661,7 +660,6 @@ exports.readIngOutRecipe = function (req, res) {
                 console.log(results.length);
                 for (let i = 0; i < recipeArr.length; i++) {
                     let imgPath = recipeArr[i]["mainImg"];
-                    console.log(recipeArr[i]['title']);
                     let recipeImageByte = fs.readFileSync(imgPath, 'base64');
 
                     recipeArr[i].recipeImageByte = recipeImageByte;
@@ -680,6 +678,7 @@ exports.readFoodOutRecipe = function (req, res) {
     console.log('who get in here post /readFoodOutRecipe');
     var inputData;
     const MIN_RECIPE_COUNT = 10;
+    const MAX_RECIPE_COUNT = 10;
 
     req.on('data', (data) => {
         inputData = JSON.parse(data);
@@ -710,11 +709,11 @@ exports.readFoodOutRecipe = function (req, res) {
                     .then((imgArr) => {
                         for (let i = 0; i < recipeArr.length; i++) {
                             recipeArr[i]['recipeImageByte'] = imgArr[i];
-                            console.log(recipeArr[i]['recipeImageByte'].length);
                         }
 
                         if (recipeArr.length >= MIN_RECIPE_COUNT) {
                             res.write(JSON.stringify(recipeArr));
+                            console.log("recipeArr sending!");
                             res.end();
                         } else {
                             const searchUrl = "https://www.10000recipe.com/recipe/list.html?q=" + encodeURI(title);
@@ -745,7 +744,10 @@ exports.readFoodOutRecipe = function (req, res) {
                                         // 'ingredient' : 레시피 재료
                                         // 'recipeImageByte' : 레시피 대표 이미지
                                         recipeArr.concat(recipes);
-                                        res.write(JSON.stringify(recipeArr));
+                                        if (recipeArr.length >= MAX_RECIPE_COUNT)
+                                            res.write(JSON.stringify(recipeArr.slice(0, MAX_RECIPE_COUNT)));
+                                        else
+                                            res.write(JSON.stringify(recipeArr));
                                     }
                                     res.end();
                                 });
@@ -1212,6 +1214,7 @@ exports.readUserLikeOut = function (req, res) {
 }
 
 ////////////////////////////////////////////////////////////////////// 외부 레시피 크롤링 함수들
+
 function getPages(url) {
     console.log("getPages");
     return new Promise((resolve, reject) => {
@@ -1221,7 +1224,6 @@ function getPages(url) {
                 // 검색된 레시피 개수를 구한 뒤 페이지 수 구하기
                 let volume = $('.m_list_tit').find('b').text().replace(",", "");
                 let pages = Math.ceil(volume / 40);
-                console.log(volume + ", " + pages);
                 let pageURL = url + "&order=reco&page=";
                 let result = {
                     volume: volume,
@@ -1329,7 +1331,8 @@ function getRecipes(linkArr) {
         console.log("no link in getRecipes.");
         return 0;
     }
-
+    
+    //크롤링할 레시피 최대 개수
     const MAX_COUNT = 100;
     let count = 0;
 
@@ -1337,7 +1340,6 @@ function getRecipes(linkArr) {
     console.log("linkArr.length: " + linkArr.length);
     for (let i = 0; i < linkArr.length; i++) {
         promises.push(new Promise(function (resolve, reject) {
-            console.log(linkArr[i]);
             resolve(getRecipe(linkArr[i]));
         }));
         if (++count >= MAX_COUNT) break;
@@ -1431,7 +1433,6 @@ function saveRecipes(recipes) {
     return new Promise((resolve, reject) => {
         Promise.all(promises)
             .then((recipes) => {
-                console.log("recipes.length : " + recipes.length);
                 resolve(recipes);
             });
     });

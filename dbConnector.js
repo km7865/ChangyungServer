@@ -954,7 +954,7 @@ exports.checkLink = function (link, callback) {
 exports.searchRecipeOutList = function(title, callback) {
     pool.getConnection(function (err, conn) {
         if (!err) {
-            var sql = "SELECT * FROM mydb.recipeOut WHERE title LIKE " + "'%" + title + "%'";
+            var sql = "SELECT * FROM mydb.recipeOut WHERE title LIKE " + "'%" + title + "%'" + " ORDER BY rand() LIMIT 40";
             conn.query(sql, function (err, results) {
                 if (err) {
                     console.log(err);
@@ -975,6 +975,7 @@ exports.searchRecipeOutListIng = function(ingredients, callback) {
         if (i) sql += "and ";
         sql += "ingredient LIKE " + "'%" + ingredients[i] + "%' ";
     }
+    sql += " ORDER BY rand() LIMIT 40";
 
     pool.getConnection(function (err, conn) {
         if (!err) {
