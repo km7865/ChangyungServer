@@ -75,8 +75,7 @@ exports.reqSearchRecipe = function (req, res) {
                     try {
                         fs.statSync(imgPaths[0]);
                         recipeImageByte = fs.readFileSync(imgPaths[0], 'base64');
-                    }
-                    catch (err) {
+                    } catch (err) {
                         if (err.code === 'ENOENT') {
                             console.log('file or directory does not exist');
                         }
@@ -114,8 +113,7 @@ exports.reqSearchRecipeIng = function (req, res) {
                     try {
                         fs.statSync(imgPaths[0]);
                         recipeImageByte = fs.readFileSync(imgPaths[0], 'base64');
-                    }
-                    catch (err) {
+                    } catch (err) {
                         if (err.code === 'ENOENT') {
                             console.log('file or directory does not exist');
                         }
@@ -159,8 +157,7 @@ exports.reqBestRecipe = function (req, res) {
                     try {
                         fs.statSync(imgPaths[0]);
                         recipeImageByte = fs.readFileSync(imgPaths[0], 'base64');
-                    }
-                    catch (err) {
+                    } catch (err) {
                         if (err.code === 'ENOENT') {
                             console.log('file or directory does not exist');
                         }
@@ -199,8 +196,7 @@ exports.readUserRecipe = function (req, res) {
                     try {
                         fs.statSync(imgPaths[0]);
                         recipeImageByte = fs.readFileSync(imgPaths[0], 'base64');
-                    }
-                    catch (err) {
+                    } catch (err) {
                         if (err.code === 'ENOENT') {
                             console.log('file or directory does not exist');
                         }
@@ -237,7 +233,7 @@ exports.createComment = function (req, res) {
                 db.checkSetting(userId, (results) => {
                     console.log(results); // 1 : 알림 on, 2 : 실패, 3 : 알림 off
 
-                    if(results == "1") {
+                    if (results == "1") {
                         db.createNotification(userId, recipeInId, 1, (results) => {
                             res.write("1");
                             res.end();
@@ -308,7 +304,7 @@ exports.createLikeIn = function (req, res) {
                 db.checkSetting(userId, (results) => {
                     console.log(results); // 1 : 알림 on, 2 : 실패, 3 : 알림 off
 
-                    if(results == "1") {
+                    if (results == "1") {
                         db.createNotification(recipeInId, userId, 2, (results) => {
                             res.write("1");
                             res.end();
@@ -633,8 +629,7 @@ exports.readRecipe = function (req, res) {
                     try {
                         fs.statSync(imgPaths[0]);
                         recipeImageByte = fs.readFileSync(imgPaths[0], 'base64');
-                    }
-                    catch (err) {
+                    } catch (err) {
                         if (err.code === 'ENOENT') {
                             console.log('file or directory does not exist');
                         }
@@ -659,40 +654,32 @@ exports.readRecipeDetail = function (req, res) {
     });
 
     req.on('end', () => {
-        var fs = require('fs'); //File System 모듈 불러오기
+            var fs = require('fs'); //File System 모듈 불러오기
 
-        db.readRecipeDetail(inputData.recipeInId, (results) => {
-            if (results == "2" || results == "3") {
-                res.write(results);
-            } else {
-                var recipe = results;
-                var recipeImageBytes = [];
-                var imgPaths = recipe["imgPath"].split('`');
-                for (var j = 0; j < imgPaths.length; j++) { //레시피의 이미지 경로수만큼
-                    var imgPath = new Object();
-                    let recipeImageByte = [];
-                    try {
-                        fs.statSync(imgPaths[0]);
-                        recipeImageByte = fs.readFileSync(imgPaths[0], 'base64');
-                    }
-                    catch (err) {
-                        if (err.code === 'ENOENT') {
-                            console.log('file or directory does not exist');
+            db.readRecipeDetail(inputData.recipeInId, (results) => {
+                if (results == "2" || results == "3") {
+                    res.write(results);
+                } else {
+                    var recipe = results;
+                    var recipeImageBytes = [];
+                    var imgPaths = recipe["imgPath"].split('`');
+                    readFiles(imgPaths).then((imgArr) => {
+                        for (let i = 0; i < imgPaths.length; i++) {
+                            var imgPath = new Object();
+                            imgPath.recipeImageByte = imgArr[i];
+                            recipeImageBytes.push(imgPath);
                         }
-                    }
-                    imgPath.recipeImageByte = recipeImageByte;
+                        recipe["recipeImageBytes"] = recipeImageBytes;
+                        delete recipe.imgPath;
 
-                    recipeImageBytes.push(imgPath);
+                        res.write(JSON.stringify(recipe));
+                        res.end();
+                    });
                 }
-                recipe["recipeImageBytes"] = recipeImageBytes;
-                delete recipe.imgPath;
-
-                res.write(JSON.stringify(recipe));
-
-            }
-            res.end();
-        });
-    });
+            });
+        }
+    )
+    ;
 }
 
 // 재료기반 외부레시피 검색(조회)
@@ -719,8 +706,7 @@ exports.readIngOutRecipe = function (req, res) {
                     try {
                         fs.statSync(imgPath);
                         recipeImageByte = fs.readFileSync(imgPath, 'base64');
-                    }
-                    catch (err) {
+                    } catch (err) {
                         if (err.code === 'ENOENT') {
                             console.log('file or directory does not exist');
                         }
@@ -813,6 +799,7 @@ exports.readFoodOutRecipe = function (req, res) {
                                             res.write(JSON.stringify(recipeArr));
                                     }
                                     res.end();
+                                    console.log("send!");
                                 });
                         }
                     });
@@ -1030,29 +1017,28 @@ exports.readIngPrice = function (req, res) {
     req.on('end', () => {
         ingData = inputData.ingredient.split("`")
         var i = 0;
-        ingData.forEach(function (e){
+        ingData.forEach(function (e) {
             console.log("ingData.length : " + ingData.length)
             db.checkIngPrice(e, (results) => {
                 console.log("e : " + e)
                 if (results == "2") {
                     res.write(results);
                     res.end();
-                }
-                else{
+                } else {
                     db.getIngPrice(e, (results) => {
                         if (results == "2") {
                             res.write(results);
                             res.end();
                         }
 
-                        // else if(results == "3") {
-                        //     ingPrice.push("-")
+                            // else if(results == "3") {
+                            //     ingPrice.push("-")
                         // }
 
                         else if (results != "3") {
                             ingPrice.push(results)
 
-                            if(i == ingData.length - 1) {
+                            if (i == ingData.length - 1) {
                                 res.write(JSON.stringify(ingPrice));
                                 res.end();
                             }
@@ -1148,8 +1134,7 @@ exports.readUserComment = function (req, res) {
                     try {
                         fs.statSync(imgPaths[0]);
                         recipeImageByte = fs.readFileSync(imgPaths[0], 'base64');
-                    }
-                    catch (err) {
+                    } catch (err) {
                         if (err.code === 'ENOENT') {
                             console.log('file or directory does not exist');
                         }
@@ -1253,8 +1238,7 @@ exports.readUserLikeIn = function (req, res) {
                     try {
                         fs.statSync(imgPaths[0]);
                         imgPath.recipeImageByte = fs.readFileSync(imgPaths[0], 'base64');
-                    }
-                    catch (err) {
+                    } catch (err) {
                         if (err.code === 'ENOENT') {
                             console.log('file or directory does not exist');
                         }
@@ -1298,8 +1282,7 @@ exports.readUserLikeOut = function (req, res) {
                     try {
                         fs.statSync(imgPaths);
                         recipeImageByte = fs.readFileSync(imgPaths, 'base64');
-                    }
-                    catch (err) {
+                    } catch (err) {
                         if (err.code === 'ENOENT') {
                             console.log('file or directory does not exist');
                         }
@@ -1434,9 +1417,9 @@ function getRecipes(linkArr) {
         console.log("no link in getRecipes.");
         return 0;
     }
-    
+
     //크롤링할 레시피 최대 개수
-    const MAX_COUNT = 100;
+    const MAX_COUNT = 30;
     let count = 0;
 
     let promises = new Array();
@@ -1519,7 +1502,7 @@ function saveRecipes(recipes) {
                                     if (err) {
                                         console.log(err);
                                         throw err;
-                                    } else console.log('write Complete!');
+                                    } else console.log("write Complete!");
                                 });
 
                                 db.updateImgPathOut(recipeOutId, imgPath, (results) => {
