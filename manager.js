@@ -1459,14 +1459,21 @@ function getRecipe(recipeURL) {
                     ingredient += ingredients[i].children[0].data.trim();
                 }
                 // 레시피 대표 이미지 경로
-                let imgUrl = $('.centeredcrop').find('img')[0].attribs.src;
 
-                recipe['title'] = title;
-                recipe['link'] = recipeURL;
-                recipe['ingredient'] = ingredient;
-                recipe['imgUrl'] = imgUrl;
+                let imgUrl = "";
+                if (typeof ($('.centeredcrop').find('img')[0]) == "undefined") {
+                    resolve("");
+                    imgUrl = "";
+                }
+                else {
+                    imgUrl = $('.centeredcrop').find('img')[0].attribs.src;
+                    recipe['title'] = title;
+                    recipe['link'] = recipeURL;
+                    recipe['ingredient'] = ingredient;
+                    recipe['imgUrl'] = imgUrl;
+                    resolve(recipe);
+                }
 
-                resolve(recipe);
             })
             .catch(function (error) {
                 console.log(error);
@@ -1480,6 +1487,7 @@ function saveRecipes(recipes) {
     let promises = new Array();
 
     for (let i = 0; i < recipes.length; i++) {
+        if (recipes[i]['title'] == null) continue;
         let link = recipes[i].link;
         let title = recipes[i].title;
         let ingredient = recipes[i].ingredient;
