@@ -909,7 +909,7 @@ exports.getUserLikeIn = function(userId, callback){
 exports.getUserLikeOut = function(userId, callback){
     pool.getConnection(function (err, conn) {
         if(!err) {
-            var sql = "SELECT likeout.recipeOutId, recipeout.title, recipeout.link, recipeout.mainImg" +
+            var sql = "SELECT likeout.recipeOutId, recipeout.title, recipeout.link, recipeout.mainImg, " +
                 "likeout.uploadDate FROM mydb.likeout, mydb.recipeout " +
                 "where likeout.userId=? and recipeout.recipeOutId = likeout.recipeOutId"
             var values = [userId]
