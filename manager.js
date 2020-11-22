@@ -272,7 +272,7 @@ exports.createLikeIn = function (req, res) {
                     console.log(results); // 1 : 알림 on, 2 : 실패, 3 : 알림 off
 
                     if(results == "1") {
-                        db.createNotification(userId, recipeInId, 2, (results) => {
+                        db.createNotification(recipeInId, userId, 2, (results) => {
                             res.write("1");
                             res.end();
                         });
@@ -1096,8 +1096,8 @@ exports.readUserComment = function (req, res) {
 }
 
 // 알림 등록
-function createNotification(userId, recipeInId, type) {
-    db.createNotification(userId, recipeInId, type, (results) => {
+function createNotification(recipeInId, userId, type) {
+    db.createNotification(recipeInId, userId, type, (results) => {
         return results // 11 : 등록 성공, 12 : 실패
     })
 }
