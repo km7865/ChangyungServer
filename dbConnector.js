@@ -728,7 +728,7 @@ exports.createNotification = function(recipeInId, userId, type, callback){
                     callback("12")
                 }
                 else {
-                    if (results[0][userId] == userId)
+                    if (results[0]["userId"] == userId)
                         callback("13")
                     else {
                         sql = "insert into mydb.notification(recipeInId, userId, type) values(?, ?, ?)"

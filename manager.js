@@ -1218,7 +1218,7 @@ exports.updateSetting = function (req, res) {
     });
 
     req.on('end', () => {
-        db.getNotification(inputData.userId, inputData.notification, (results) => {
+        db.updateSetting(inputData.userId, inputData.notification, (results) => {
             console.log(results); // 1 : 알림 데이터, 2 : 실패
             res.write(JSON.stringify(results));
             res.end();
