@@ -549,7 +549,7 @@ exports.createLikeOut = function(recipeOutId, userId, uploadDate, callback){
     pool.getConnection(function (err, conn) {
         if(!err) {
             var sql = "insert into mydb.likeout(recipeOutId, userId, uploadDate) " +
-                "value(?, ?)"
+                "value(?, ?, ?)"
             var values = [recipeOutId, userId, uploadDate]
             conn.query(sql, values, function(err, results, fields) {
                 if (err) {
@@ -717,18 +717,32 @@ exports.getIngFromRecipeOut = function(callback){
     });
 }
 
-exports.createNotification = function(userId, recipeInId, type, callback){
+exports.createNotification = function(recipeInId, userId, type, callback){
     pool.getConnection(function (err, conn) {
         if(!err) {
-            var sql = "insert into mydb.notification(userId, recipeInId, type) values(?, ?, ?)"
-            var values = [userId, recipeInId, type];
+            var sql = "select userId from mydb.recipein where recipeInId = ?"
+            var values = [recipeInId]
             conn.query(sql, values, function(err, results, fields) {
                 if (err) {
                     console.log(err);
                     callback("12")
                 }
-                else
-                    callback("11")
+                else {
+                    if (results[0][userId] == userId)
+                        callback("13")
+                    else {
+                        sql = "insert into mydb.notification(recipeInId, userId, type) values(?, ?, ?)"
+                        values = [recipeInId, userId, type];
+                        conn.query(sql, values, function(err, results, fields) {
+                            if (err) {
+                                console.log(err);
+                                callback("12")
+                            }
+                            else
+                                callback("11")
+                        });
+                    }
+                }
             });
         }
         conn.release();
