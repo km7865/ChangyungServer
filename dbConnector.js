@@ -116,8 +116,18 @@ exports.signUpUser = function (userId, pw, callback) {
                 if (err) {
                     console.log(err);
                     callback("2")
-                } else
-                    callback("1");
+                } else {
+                    sql = "insert into mydb.setting(userId, notification) values(?, ?)"
+                    values = [userId, 0]
+                    conn.query(sql, values, function(err, results, fields) {
+                        if (err) {
+                            console.log(err);
+                            callback("2")
+                        }
+                        else
+                            callback("1")
+                    });
+                }
             });
         }
         conn.release();
@@ -319,7 +329,12 @@ exports.readRecipeDetail = function (recipeInId, callback) {
                     console.log(err);
                     callback("2");
                 } else {
-                    callback(results[0]);
+                    var len = results.length;
+
+                    if (len == 0)
+                        callback("3")
+                    else
+                        callback(results[0]);
                 }
             });
         }
@@ -741,7 +756,10 @@ exports.deleteNotification = function(notificationId, callback){
 exports.getNotification = function(userId, callback){
     pool.getConnection(function (err, conn) {
         if(!err) {
-            var sql = "select * from mydb.notification where userId = ?"
+            var sql = "select notification.notificationId, notification.userId, " +
+                "notification.recipeInId, notification.type, recipein.title " +
+                "from mydb.notification, mydb.recipein " +
+                "where recipein.userId = ? and notification.recipeInId = recipein.recipeInId"
             var values = [userId];
             conn.query(sql, values, function(err, results, fields) {
                 if (err) {
@@ -769,8 +787,18 @@ exports.checkSetting = function(userId, callback){
                 else {
                     let len = results.length
 
-                    if(len == 0)
-                        callback("3")
+                    if(len == 0) {
+                        sql = "insert into mydb.setting(userId, notification) values(?, ?)"
+                        values = [userId, 0]
+                        conn.query(sql, values, function(err, results, fields) {
+                            if (err) {
+                                console.log(err);
+                                callback("2")
+                            }
+                            else
+                                callback("1")
+                        });
+                    }
                     else
                         callback("1")
                 }
@@ -848,7 +876,7 @@ exports.getUserComment = function(userId, callback){
 exports.getUserLikeIn = function(userId, callback){
     pool.getConnection(function (err, conn) {
         if(!err) {
-            var sql = "SELECT likein.recipeInId, likein.userId, recipein.title, " +
+            var sql = "SELECT likein.recipeInId, recipein.userId, recipein.title, " +
                 "recipein.imgPath, likein.uploadDate FROM mydb.likein, mydb.recipein " +
                 "where likein.userId=? and recipein.recipeInId = likein.recipeInId"
             var values = [userId]
@@ -857,7 +885,6 @@ exports.getUserLikeIn = function(userId, callback){
                     console.log(err);
                     callback("2")
                 }
-                console.log("ok");
                 callback(results)
             });
         }
@@ -868,7 +895,7 @@ exports.getUserLikeIn = function(userId, callback){
 exports.getUserLikeOut = function(userId, callback){
     pool.getConnection(function (err, conn) {
         if(!err) {
-            var sql = "SELECT likeout.recipeOutId, likeout.userId, recipeout.title, " +
+            var sql = "SELECT likeout.recipeOutId, recipeout.title, recipeout.link, recipeout.mainImg" +
                 "likeout.uploadDate FROM mydb.likeout, mydb.recipeout " +
                 "where likeout.userId=? and recipeout.recipeOutId = likeout.recipeOutId"
             var values = [userId]
@@ -877,7 +904,6 @@ exports.getUserLikeOut = function(userId, callback){
                     console.log(err);
                     callback("2")
                 }
-                console.log("ok");
                 callback(results)
             });
         }

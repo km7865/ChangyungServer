@@ -618,7 +618,7 @@ exports.readRecipeDetail = function (req, res) {
         var fs = require('fs'); //File System 모듈 불러오기
 
         db.readRecipeDetail(inputData.recipeInId, (results) => {
-            if (results == "2") {
+            if (results == "2" || results == "3") {
                 res.write(results);
             } else {
                 var recipe = results;
@@ -982,11 +982,11 @@ exports.readIngPrice = function (req, res) {
                             res.end();
                         }
 
-                        else if(results == "3") {
-                            ingPrice.push("-")
-                        }
+                        // else if(results == "3") {
+                        //     ingPrice.push("-")
+                        // }
 
-                        else {
+                        else if (results != "3") {
                             ingPrice.push(results)
 
                             if(i == ingData.length - 1) {
@@ -1205,10 +1205,27 @@ exports.readUserLikeOut = function (req, res) {
     req.on('end', () => {
         var fs = require('fs');
 
-        db.getUserLikeIn(inputData.userId, (results) => {
-            console.log(results); // 1 : 외부 레시피 데이터, 2 : 실패
-            res.write(JSON.stringify(results));
-            res.end();
+        db.getUserLikeOut(inputData.userId, (results) => {
+            console.log(results); // 1 : 내부 레시피 데이터, 2 : 실패
+            if (results == "2") {
+                res.write(results);
+                res.end();
+            } else {
+                var commentArr = results;
+                var recipeImageBytes = [];
+                for (var i = 0; i < commentArr.length; i++) {
+                    recipeImageBytes = [];
+                    var imgPaths = commentArr[i]["mainImg"];
+                    var imgPath = new Object();
+                    imgPath.recipeImageByte = fs.readFileSync(imgPaths, 'base64');
+                    recipeImageBytes.push(imgPath);
+
+                    commentArr[i].recipeImageBytes = recipeImageBytes;
+                    delete commentArr[i].imgPath;
+                }
+                res.write(JSON.stringify(commentArr));
+                res.end();
+            }
         });
     });
 }
