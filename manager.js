@@ -763,7 +763,7 @@ exports.readFoodOutRecipe = function (req, res) {
                         if (recipeArr.length >= MIN_RECIPE_COUNT) {
                             console.log("recipeOut enough!");
                             res.write(JSON.stringify(recipeArr));
-                            console.log("recipeArr sending!");
+                            console.log("recipeArr send!");
                             res.end();
                         } else {
                             const searchUrl = "https://www.10000recipe.com/recipe/list.html?q=" + encodeURI(title);
@@ -783,10 +783,12 @@ exports.readFoodOutRecipe = function (req, res) {
                                 .then(getRecipes)
                                 .then(saveRecipes)
                                 .then((recipes) => {
-                                    res.write(JSON.stringify(recipeArr));
+                                    console.log("before sending! recipes.length : " + recipes.length);
+                                    for (let i = 0; i < recipeArr.length; i++)
+                                        recipes.push(recipeArr[i]);
                                     res.write(JSON.stringify(recipes));
                                     res.end();
-                                    console.log("send! recipes.length : " + recipes.length);
+                                    console.log("after sending! recipes.length : " + recipes.length);
                                 });
                         }
                     });
@@ -1405,7 +1407,7 @@ function getRecipes(linkArr) {
     }
 
     //크롤링할 레시피 최대 개수
-    const MAX_COUNT = 30;
+    const MAX_COUNT = 5;
     let count = 0;
 
     let promises = new Array();
