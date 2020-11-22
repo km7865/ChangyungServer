@@ -1035,13 +1035,12 @@ exports.readIngPrice = function (req, res) {
                             //     ingPrice.push("-")
                         // }
 
-                        else if (results != "3") {
+                        else if (results != "3")
                             ingPrice.push(results)
 
-                            if (i == ingData.length - 1) {
-                                res.write(JSON.stringify(ingPrice));
-                                res.end();
-                            }
+                        if (i == ingData.length - 1) {
+                            res.write(JSON.stringify(ingPrice));
+                            res.end();
                         }
                         i++
                     })
