@@ -783,12 +783,24 @@ exports.readFoodOutRecipe = function (req, res) {
                                 .then(getRecipes)
                                 .then(saveRecipes)
                                 .then((recipes) => {
-                                    console.log("before sending! recipes.length : " + recipes.length);
-                                    for (let i = 0; i < recipeArr.length; i++)
-                                        recipes.push(recipeArr[i]);
-                                    res.write(JSON.stringify(recipes));
-                                    res.end();
-                                    console.log("after sending! recipes.length : " + recipes.length);
+                                    let imgPathArr = [];
+                                    for (let i = 0; i < recipes.length; i++) {
+                                        imgPathArr.push(recipes[i]['imgPath']);
+                                    }
+
+                                    readFiles(imgPathArr)
+                                        .then((imgArr) => {
+                                            for (let i = 0; i < recipes.length; i++) {
+                                                recipes[i]['recipeImageByte'] = imgArr[i];
+                                            }
+
+                                            for (let i = 0; i < recipeArr.length; i++)
+                                                recipes.push(recipeArr[i]);
+                                            res.write(JSON.stringify(recipes));
+                                            res.end();
+                                            console.log("send!");
+                                        });
+
                                 });
                         }
                     });
@@ -1407,7 +1419,7 @@ function getRecipes(linkArr) {
     }
 
     //크롤링할 레시피 최대 개수
-    const MAX_COUNT = 5;
+    const MAX_COUNT = 30;
     let count = 0;
 
     let promises = new Array();
@@ -1484,8 +1496,9 @@ function saveRecipes(recipes) {
                     axios.get(imgUrl, {responseType: 'arraybuffer'})
                         .then(function (response) {
                                 recipeImageByte = Buffer.from(response.data, 'base64');
-                                recipes[i]['recipeImageByte'] = recipeImageByte;
+                                //recipes[i]['recipeImageByte'] = recipeImageByte;
                                 recipes[i]['recipeOutId'] = recipeOutId;
+                                recipes[i]['imgPath'] = imgPath;
 
                                 fs.writeFile(imgPath, recipeImageByte, (err) => {
                                     if (err) {
