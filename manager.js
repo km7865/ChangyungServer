@@ -782,6 +782,9 @@ exports.readFoodOutRecipe = function (req, res) {
                                 .then(getRecipes)
                                 .then(saveRecipes)
                                 .then((recipes) => {
+                                    for (let i = 0; i < recipes.length; i++) {
+                                        console.log(recipes[i].title + " " + recipes[i].ingredient + " " + recipes[i].recipeImageByte.length);
+                                    }
                                     res.write(JSON.stringify(recipes));
                                     res.end();
                                     console.log("send! recipes.length : " + recipes.length);
@@ -1504,7 +1507,7 @@ function saveRecipes(recipes) {
                                     if (err) {
                                         console.log(err);
                                         throw err;
-                                    } else console.log("write Complete!");
+                                    }
                                 });
 
                                 db.updateImgPathOut(recipeOutId, imgPath, (results) => {
@@ -1531,7 +1534,15 @@ function readFiles(imgPaths) {
 
     for (let i = 0; i < imgPaths.length; i++) {
         promises.push(new Promise(function (resolve, reject) {
-            resolve(fs.readFileSync(imgPaths[i], 'base64'));
+            try {
+                fs.statSync(imgPaths[i]);
+                resolve(fs.readFileSync(imgPaths[i], 'base64'));
+            } catch (err) {
+                if (err.code === 'ENOENT') {
+                    console.log('file or directory does not exist');
+                }
+                resolve("");
+            }
         }));
     }
 
