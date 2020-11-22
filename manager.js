@@ -783,30 +783,10 @@ exports.readFoodOutRecipe = function (req, res) {
                                 .then(getRecipes)
                                 .then(saveRecipes)
                                 .then((recipes) => {
-                                    for (let i = 0; i < recipes.length; i++) {
-                                        console.log(recipes[i].title + " " + recipes[i].ingredient + " " + recipes[i].recipeImageByte.length);
-                                    }
+                                    res.write(JSON.stringify(recipeArr));
                                     res.write(JSON.stringify(recipes));
                                     res.end();
                                     console.log("send! recipes.length : " + recipes.length);
-                                    // if (recipes.length == 0) {
-                                    //     if (recipeArr.length == 0) res.write("3"); // 레시피 없음
-                                    //     else res.write(JSON.stringify(recipeArr));
-                                    // } else {
-                                    //     // 클라이언트에 recipe list 전송
-                                    //     // JSON 형식
-                                    //     // 'title' : 레시피 제목
-                                    //     // 'link' : 레시피 링크
-                                    //     // 'ingredient' : 레시피 재료
-                                    //     // 'recipeImageByte' : 레시피 대표 이미지
-                                    //     recipeArr.concat(recipes);
-                                    //     if (recipeArr.length >= MAX_RECIPE_COUNT)
-                                    //         res.write(JSON.stringify(recipeArr.slice(0, MAX_RECIPE_COUNT)));
-                                    //     else
-                                    //         res.write(JSON.stringify(recipeArr));
-                                    // }
-                                    // res.end();
-                                    // console.log("send!");
                                 });
                         }
                     });
@@ -1503,6 +1483,7 @@ function saveRecipes(recipes) {
                         .then(function (response) {
                                 recipeImageByte = Buffer.from(response.data, 'base64');
                                 recipes[i]['recipeImageByte'] = recipeImageByte;
+                                recipes[i]['recipeOutId'] = recipeOutId;
 
                                 fs.writeFile(imgPath, recipeImageByte, (err) => {
                                     if (err) {
