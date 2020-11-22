@@ -71,7 +71,16 @@ exports.reqSearchRecipe = function (req, res) {
                 let recipeArr = results;
                 for (let i = 0; i < recipeArr.length; i++) {
                     let imgPaths = recipeArr[i]["imgPath"].split('`');
-                    let recipeImageByte = fs.readFileSync(imgPaths[0], 'base64');
+                    let recipeImageByte = [];
+                    try {
+                        fs.statSync(imgPaths[0]);
+                        recipeImageByte = fs.readFileSync(imgPaths[0], 'base64');
+                    }
+                    catch (err) {
+                        if (err.code === 'ENOENT') {
+                            console.log('file or directory does not exist');
+                        }
+                    }
                     recipeArr[i].recipeImageByte = recipeImageByte;
                     delete recipeArr[i].imgPath;
                 }
@@ -101,7 +110,16 @@ exports.reqSearchRecipeIng = function (req, res) {
                 let recipeArr = results;
                 for (let i = 0; i < recipeArr.length; i++) {
                     let imgPaths = recipeArr[i]["imgPath"].split('`');
-                    let recipeImageByte = fs.readFileSync(imgPaths[0], 'base64');
+                    let recipeImageByte = [];
+                    try {
+                        fs.statSync(imgPaths[0]);
+                        recipeImageByte = fs.readFileSync(imgPaths[0], 'base64');
+                    }
+                    catch (err) {
+                        if (err.code === 'ENOENT') {
+                            console.log('file or directory does not exist');
+                        }
+                    }
                     recipeArr[i].recipeImageByte = recipeImageByte;
                     delete recipeArr[i].imgPath;
                 }
@@ -137,7 +155,17 @@ exports.reqBestRecipe = function (req, res) {
                 let recipeArr = results;
                 for (let i = 0; i < recipeArr.length; i++) {
                     let imgPaths = recipeArr[i]["imgPath"].split('`');
-                    let recipeImageByte = fs.readFileSync(imgPaths[0], 'base64');
+                    let recipeImageByte = [];
+                    try {
+                        fs.statSync(imgPaths[0]);
+                        recipeImageByte = fs.readFileSync(imgPaths[0], 'base64');
+                    }
+                    catch (err) {
+                        if (err.code === 'ENOENT') {
+                            console.log('file or directory does not exist');
+                        }
+                    }
+
                     recipeArr[i].recipeImageByte = recipeImageByte;
                     delete recipeArr[i].imgPath;
                 }
@@ -167,7 +195,16 @@ exports.readUserRecipe = function (req, res) {
                 let recipeArr = results;
                 for (let i = 0; i < recipeArr.length; i++) {
                     let imgPaths = recipeArr[i]["imgPath"].split('`');
-                    let recipeImageByte = fs.readFileSync(imgPaths[0], 'base64');
+                    let recipeImageByte = [];
+                    try {
+                        fs.statSync(imgPaths[0]);
+                        recipeImageByte = fs.readFileSync(imgPaths[0], 'base64');
+                    }
+                    catch (err) {
+                        if (err.code === 'ENOENT') {
+                            console.log('file or directory does not exist');
+                        }
+                    }
                     recipeArr[i].recipeImageByte = recipeImageByte;
                     delete recipeArr[i].imgPath;
                 }
@@ -592,9 +629,16 @@ exports.readRecipe = function (req, res) {
                 var recipeArr = results;
                 for (var i = 0; i < recipeArr.length; i++) {
                     var imgPaths = recipeArr[i]["imgPath"].split('`');
-
-                    var recipeImageByte = fs.readFileSync(imgPaths[0], 'base64');
-                    // for (var j = 0; j < imgPaths.length; j++) {}
+                    let recipeImageByte = [];
+                    try {
+                        fs.statSync(imgPaths[0]);
+                        recipeImageByte = fs.readFileSync(imgPaths[0], 'base64');
+                    }
+                    catch (err) {
+                        if (err.code === 'ENOENT') {
+                            console.log('file or directory does not exist');
+                        }
+                    }
                     recipeArr[i].recipeImageByte = recipeImageByte;
                     delete recipeArr[i].imgPath;
                 }
@@ -626,7 +670,18 @@ exports.readRecipeDetail = function (req, res) {
                 var imgPaths = recipe["imgPath"].split('`');
                 for (var j = 0; j < imgPaths.length; j++) { //레시피의 이미지 경로수만큼
                     var imgPath = new Object();
-                    imgPath.recipeImageByte = fs.readFileSync(imgPaths[j], 'base64');
+                    let recipeImageByte = [];
+                    try {
+                        fs.statSync(imgPaths[0]);
+                        recipeImageByte = fs.readFileSync(imgPaths[0], 'base64');
+                    }
+                    catch (err) {
+                        if (err.code === 'ENOENT') {
+                            console.log('file or directory does not exist');
+                        }
+                    }
+                    imgPath.recipeImageByte = recipeImageByte;
+
                     recipeImageBytes.push(imgPath);
                 }
                 recipe["recipeImageBytes"] = recipeImageBytes;
@@ -660,7 +715,16 @@ exports.readIngOutRecipe = function (req, res) {
                 console.log(results.length);
                 for (let i = 0; i < recipeArr.length; i++) {
                     let imgPath = recipeArr[i]["mainImg"];
-                    let recipeImageByte = fs.readFileSync(imgPath, 'base64');
+                    let recipeImageByte = [];
+                    try {
+                        fs.statSync(imgPath);
+                        recipeImageByte = fs.readFileSync(imgPath, 'base64');
+                    }
+                    catch (err) {
+                        if (err.code === 'ENOENT') {
+                            console.log('file or directory does not exist');
+                        }
+                    }
 
                     recipeArr[i].recipeImageByte = recipeImageByte;
                     delete recipeArr[i].mainImg;
@@ -671,7 +735,6 @@ exports.readIngOutRecipe = function (req, res) {
         });
     });
 }
-
 
 // 요리기반 외부레시피 검색(조회)
 exports.readFoodOutRecipe = function (req, res) {
@@ -698,7 +761,6 @@ exports.readFoodOutRecipe = function (req, res) {
                 let recipeArr = results;
                 let imgPathArr = [];
 
-                console.log("recipeOut enough!");
                 for (let i = 0; i < recipeArr.length; i++) {
                     let imgPath = recipeArr[i]["mainImg"];
                     imgPathArr.push(imgPath);
@@ -712,6 +774,7 @@ exports.readFoodOutRecipe = function (req, res) {
                         }
 
                         if (recipeArr.length >= MIN_RECIPE_COUNT) {
+                            console.log("recipeOut enough!");
                             res.write(JSON.stringify(recipeArr));
                             console.log("recipeArr sending!");
                             res.end();
@@ -1081,11 +1144,18 @@ exports.readUserComment = function (req, res) {
                 for (var i = 0; i < commentArr.length; i++) {
                     recipeImageBytes = [];
                     var imgPaths = commentArr[i]["imgPath"].split('`');
-                    var imgPath = new Object();
-                    imgPath.recipeImageByte = fs.readFileSync(imgPaths[0], 'base64');
-                    recipeImageBytes.push(imgPath);
+                    let recipeImageByte = [];
+                    try {
+                        fs.statSync(imgPaths[0]);
+                        recipeImageByte = fs.readFileSync(imgPaths[0], 'base64');
+                    }
+                    catch (err) {
+                        if (err.code === 'ENOENT') {
+                            console.log('file or directory does not exist');
+                        }
+                    }
 
-                    commentArr[i].recipeImageBytes = recipeImageBytes;
+                    commentArr[i].recipeImageByte = recipeImageByte;
                     delete commentArr[i].imgPath;
                 }
                 res.write(JSON.stringify(commentArr));
@@ -1180,7 +1250,15 @@ exports.readUserLikeIn = function (req, res) {
                     recipeImageBytes = [];
                     var imgPaths = commentArr[i]["imgPath"].split('`');
                     var imgPath = new Object();
-                    imgPath.recipeImageByte = fs.readFileSync(imgPaths[0], 'base64');
+                    try {
+                        fs.statSync(imgPaths[0]);
+                        imgPath.recipeImageByte = fs.readFileSync(imgPaths[0], 'base64');
+                    }
+                    catch (err) {
+                        if (err.code === 'ENOENT') {
+                            console.log('file or directory does not exist');
+                        }
+                    }
                     recipeImageBytes.push(imgPath);
 
                     commentArr[i].recipeImageBytes = recipeImageBytes;
@@ -1216,11 +1294,18 @@ exports.readUserLikeOut = function (req, res) {
                 for (var i = 0; i < commentArr.length; i++) {
                     recipeImageBytes = [];
                     var imgPaths = commentArr[i]["mainImg"];
-                    var imgPath = new Object();
-                    imgPath.recipeImageByte = fs.readFileSync(imgPaths, 'base64');
-                    recipeImageBytes.push(imgPath);
+                    let recipeImageByte = [];
+                    try {
+                        fs.statSync(imgPaths);
+                        recipeImageByte = fs.readFileSync(imgPaths, 'base64');
+                    }
+                    catch (err) {
+                        if (err.code === 'ENOENT') {
+                            console.log('file or directory does not exist');
+                        }
+                    }
 
-                    commentArr[i].recipeImageBytes = recipeImageBytes;
+                    commentArr[i].recipeImageByte = recipeImageByte;
                     delete commentArr[i].imgPath;
                 }
                 res.write(JSON.stringify(commentArr));
@@ -1262,6 +1347,7 @@ function getPageUrls(result) {
     let pages = result.pages;
     let pageURL = result.pageURL;
     let promises = new Array();
+    if (pages > 10) pages = 10;
 
     for (let page = 1; page <= pages; page++) {
         promises.push(new Promise(function (resolve, reject) {
