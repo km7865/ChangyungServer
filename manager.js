@@ -823,89 +823,6 @@ exports.readFoodOutRecipe = function (req, res) {
     return webElement;
 }*/
 
-// 크롤링 후 결과값인 재료값을 DB에 등록
-async function uploadIngPrice(ing) {
-    var key = ing
-    const url = "http://search.danawa.com/dsearch.php?query=" + encodeURI(key) +
-        "&originalQuery=" + encodeURI(key) + "&cate_c1=46803&volumeType=allvs&page=1&limit=15" +
-        "&sort=saveDESC&list=list&boost=true&addDelivery=N&tab=main";
-    let priceList = [];
-    let unitList = [];
-    let unitCnt = [];
-    var splitedStr, price_temp;
-    var unit;
-    var query = "li.prod_item>div.prod_main_info>div.prod_pricelist>ul" +
-        ">li.rank_one>p.memory_sect>a>span.memory_price_sect"
-    var i = 0;
-
-    const browser = await puppeteer.launch();
-    const page = await browser.newPage();
-    await page.goto(
-        url,
-        {waitUntil: "networkidle2"}
-    );
-    await page.waitFor(6000);
-
-    let product = await page.$$eval(query,
-        e => e.map((a) => a.textContent));
-
-    console.log("length : " + product.length)
-    if (product.length == 0)
-        return -1;
-    product.forEach(function (text) {
-        splitedStr = text.split('/')
-        price_temp = splitedStr[0].replace("원", "")
-        priceList[i] = price_temp.replace(/,/g, "")
-        var unit_temp = splitedStr[1]
-
-        if (unitList.length == 0 && unit_temp != null) {
-            unitList[0] = unit_temp
-            unitCnt[0] = 1
-        } else {
-            var l = 0;
-            unitList.forEach(function (f) {
-                if (f == unit_temp)
-                    unitCnt[l]++
-                else if (unit_temp != null) {
-                    unitList[unitList.length] = unit_temp
-                    unitCnt[unitCnt.length] = 1
-                }
-                l++
-            })
-        }
-
-        if (i == product.length - 1) {
-            var sum = Number(0);
-            for (let j = 0; j < priceList.length; j++)
-                sum += Number(priceList[j])
-            var priceUnit_temp = sum / priceList.length
-            var intSum = parseInt(priceUnit_temp)
-            var max = [];
-            max[1] = 0;
-
-            var k = 0;
-            unitCnt.forEach(function (g) {
-                if (g > max[1]) {
-                    max[1] = g
-                    max[0] = unitList[k]
-                }
-
-                if (k == unitList.length - 1) {
-                    var priceUnit = intSum + "(원)/" + max[0];
-                    console.log(priceUnit)
-                    db.createIngPrice(ing, priceUnit, (results) => {
-                        console.log(results); // 1 : 재료 값 추가 성공, 2 : 실패, 3 : 이미 존재하는 재료 값
-                        return results
-                    })
-                }
-                k++;
-            })
-        }
-        i++
-    })
-    await browser.close();
-}
-
 /*function uploadIngPrice2(ing){
     var key = ing
     const url = "http://search.danawa.com/dsearch.php?query=" + encodeURI(key) +
@@ -1105,6 +1022,90 @@ exports.updateIngPrice = function (req, res) {
             }
         })
     });
+}
+
+// 크롤링 후 결과값인 재료값을 DB에 등록
+async function uploadIngPrice(ing) {
+    var key = ing
+    const url = "http://search.danawa.com/dsearch.php?query=" + encodeURI(key) +
+        "&originalQuery=" + encodeURI(key) + "&cate_c1=46803&volumeType=allvs&page=1&limit=15" +
+        "&sort=saveDESC&list=list&boost=true&addDelivery=N&tab=main";
+    let priceList = [];
+    let unitList = [];
+    let unitCnt = [];
+    var splitedStr, price_temp;
+    var unit;
+    var query = "li.prod_item>div.prod_main_info>div.prod_pricelist>ul" +
+        ">li.rank_one>p.memory_sect>a>span.memory_price_sect"
+    var i = 0;
+
+    const browser = await puppeteer.launch();
+    const page = await browser.newPage();
+    page.setDefaultNavigationTimeout(0);
+    await page.goto(
+        url,
+        {waitUntil: "networkidle2"}
+    );
+    await page.waitFor(6000);
+
+    let product = await page.$$eval(query,
+        e => e.map((a) => a.textContent));
+
+    console.log("length : " + product.length)
+    if (product.length == 0)
+        return -1;
+    product.forEach(function (text) {
+        splitedStr = text.split('/')
+        price_temp = splitedStr[0].replace("원", "")
+        priceList[i] = price_temp.replace(/,/g, "")
+        var unit_temp = splitedStr[1]
+
+        if (unitList.length == 0 && unit_temp != null) {
+            unitList[0] = unit_temp
+            unitCnt[0] = 1
+        } else {
+            var l = 0;
+            unitList.forEach(function (f) {
+                if (f == unit_temp)
+                    unitCnt[l]++
+                else if (unit_temp != null) {
+                    unitList[unitList.length] = unit_temp
+                    unitCnt[unitCnt.length] = 1
+                }
+                l++
+            })
+        }
+
+        if (i == product.length - 1) {
+            var sum = Number(0);
+            for (let j = 0; j < priceList.length; j++)
+                sum += Number(priceList[j])
+            var priceUnit_temp = sum / priceList.length
+            var intSum = parseInt(priceUnit_temp)
+            var max = [];
+            max[1] = 0;
+
+            var k = 0;
+            unitCnt.forEach(function (g) {
+                if (g > max[1]) {
+                    max[1] = g
+                    max[0] = unitList[k]
+                }
+
+                if (k == unitList.length - 1) {
+                    var priceUnit = intSum + "(원)/" + max[0];
+                    console.log(ing + " : " + priceUnit)
+                    db.createIngPrice(ing, priceUnit, (results) => {
+                        console.log(results); // 1 : 재료 값 추가 성공, 2 : 실패, 3 : 이미 존재하는 재료 값
+                        return results
+                    })
+                }
+                k++;
+            })
+        }
+        i++
+    })
+    await browser.close();
 }
 
 // 내가 쓴 댓글 조회
