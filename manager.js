@@ -145,8 +145,9 @@ exports.reqBestRecipe = function (req, res) {
     req.on('end', () => {
         //inputData = req.query
         db.searchBestRecipeList(year, month, (results) => {
-            console.log(results); // 2 : 에러 , 3 : 레시피 갯수 0개
+            // 2 : 에러 , 3 : 레시피 갯수 0개
             if (results == "2" || results == "3") {
+                console.log(results);
                 res.write(results);
                 res.end();
             } else {
