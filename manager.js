@@ -235,7 +235,7 @@ exports.createComment = function (req, res) {
                     console.log(results); // 1 : 알림 on, 2 : 실패, 3 : 알림 off
 
                     if (results == "1") {
-                        db.createNotification(userId, recipeInId, 1, (results) => {
+                        db.createNotification(recipeInId, userId, 1, (results) => {
                             res.write("1");
                             res.end();
                         });
