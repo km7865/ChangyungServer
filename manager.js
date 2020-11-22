@@ -145,8 +145,9 @@ exports.reqBestRecipe = function (req, res) {
     req.on('end', () => {
         //inputData = req.query
         db.searchBestRecipeList(year, month, (results) => {
-            console.log(results); // 2 : 에러 , 3 : 레시피 갯수 0개
+            // 2 : 에러 , 3 : 레시피 갯수 0개
             if (results == "2" || results == "3") {
+                console.log(results);
                 res.write(results);
                 res.end();
             } else {
@@ -762,7 +763,7 @@ exports.readFoodOutRecipe = function (req, res) {
                         if (recipeArr.length >= MIN_RECIPE_COUNT) {
                             console.log("recipeOut enough!");
                             res.write(JSON.stringify(recipeArr));
-                            console.log("recipeArr sending!");
+                            console.log("recipeArr send!");
                             res.end();
                         } else {
                             const searchUrl = "https://www.10000recipe.com/recipe/list.html?q=" + encodeURI(title);
@@ -782,27 +783,24 @@ exports.readFoodOutRecipe = function (req, res) {
                                 .then(getRecipes)
                                 .then(saveRecipes)
                                 .then((recipes) => {
-                                    res.write(JSON.stringify(recipes));
-                                    res.end();
-                                    console.log("send! recipes.length : " + recipes.length);
-                                    // if (recipes.length == 0) {
-                                    //     if (recipeArr.length == 0) res.write("3"); // 레시피 없음
-                                    //     else res.write(JSON.stringify(recipeArr));
-                                    // } else {
-                                    //     // 클라이언트에 recipe list 전송
-                                    //     // JSON 형식
-                                    //     // 'title' : 레시피 제목
-                                    //     // 'link' : 레시피 링크
-                                    //     // 'ingredient' : 레시피 재료
-                                    //     // 'recipeImageByte' : 레시피 대표 이미지
-                                    //     recipeArr.concat(recipes);
-                                    //     if (recipeArr.length >= MAX_RECIPE_COUNT)
-                                    //         res.write(JSON.stringify(recipeArr.slice(0, MAX_RECIPE_COUNT)));
-                                    //     else
-                                    //         res.write(JSON.stringify(recipeArr));
-                                    // }
-                                    // res.end();
-                                    // console.log("send!");
+                                    let imgPathArr = [];
+                                    for (let i = 0; i < recipes.length; i++) {
+                                        imgPathArr.push(recipes[i]['imgPath']);
+                                    }
+
+                                    readFiles(imgPathArr)
+                                        .then((imgArr) => {
+                                            for (let i = 0; i < recipes.length; i++) {
+                                                recipes[i]['recipeImageByte'] = imgArr[i];
+                                            }
+
+                                            for (let i = 0; i < recipeArr.length; i++)
+                                                recipes.push(recipeArr[i]);
+                                            res.write(JSON.stringify(recipes));
+                                            res.end();
+                                            console.log("send!");
+                                        });
+
                                 });
                         }
                     });
@@ -1461,14 +1459,21 @@ function getRecipe(recipeURL) {
                     ingredient += ingredients[i].children[0].data.trim();
                 }
                 // 레시피 대표 이미지 경로
-                let imgUrl = $('.centeredcrop').find('img')[0].attribs.src;
 
-                recipe['title'] = title;
-                recipe['link'] = recipeURL;
-                recipe['ingredient'] = ingredient;
-                recipe['imgUrl'] = imgUrl;
+                let imgUrl = "";
+                if (typeof ($('.centeredcrop').find('img')[0]) == "undefined") {
+                    resolve("");
+                    imgUrl = "";
+                }
+                else {
+                    imgUrl = $('.centeredcrop').find('img')[0].attribs.src;
+                    recipe['title'] = title;
+                    recipe['link'] = recipeURL;
+                    recipe['ingredient'] = ingredient;
+                    recipe['imgUrl'] = imgUrl;
+                    resolve(recipe);
+                }
 
-                resolve(recipe);
             })
             .catch(function (error) {
                 console.log(error);
@@ -1482,6 +1487,7 @@ function saveRecipes(recipes) {
     let promises = new Array();
 
     for (let i = 0; i < recipes.length; i++) {
+        if (recipes[i]['title'] == null) continue;
         let link = recipes[i].link;
         let title = recipes[i].title;
         let ingredient = recipes[i].ingredient;
@@ -1498,13 +1504,15 @@ function saveRecipes(recipes) {
                     axios.get(imgUrl, {responseType: 'arraybuffer'})
                         .then(function (response) {
                                 recipeImageByte = Buffer.from(response.data, 'base64');
-                                recipes[i]['recipeImageByte'] = recipeImageByte;
+                                //recipes[i]['recipeImageByte'] = recipeImageByte;
+                                recipes[i]['recipeOutId'] = recipeOutId;
+                                recipes[i]['imgPath'] = imgPath;
 
                                 fs.writeFile(imgPath, recipeImageByte, (err) => {
                                     if (err) {
                                         console.log(err);
                                         throw err;
-                                    } else console.log("write Complete!");
+                                    }
                                 });
 
                                 db.updateImgPathOut(recipeOutId, imgPath, (results) => {
@@ -1531,7 +1539,15 @@ function readFiles(imgPaths) {
 
     for (let i = 0; i < imgPaths.length; i++) {
         promises.push(new Promise(function (resolve, reject) {
-            resolve(fs.readFileSync(imgPaths[i], 'base64'));
+            try {
+                fs.statSync(imgPaths[i]);
+                resolve(fs.readFileSync(imgPaths[i], 'base64'));
+            } catch (err) {
+                if (err.code === 'ENOENT') {
+                    console.log('file or directory does not exist');
+                }
+                resolve("");
+            }
         }));
     }
 
