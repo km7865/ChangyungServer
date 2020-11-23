@@ -660,6 +660,22 @@ exports.checkIngPrice = function(ingName, callback){
     });
 }
 
+exports.getIngPriceList = function(callback){
+    pool.getConnection(function (err, conn) {
+        if(!err) {
+            var sql = "select ingName from mydb.ingredientprice"
+            conn.query(sql, function(err, results, fields) {
+                if (err) {
+                    console.log(err);
+                    callback("2")
+                }
+                else callback(results)
+            });
+        }
+        conn.release();
+    });
+}
+
 exports.getIngPrice = function(ingName, callback){
     pool.getConnection(function (err, conn) {
         if(!err) {
@@ -676,7 +692,7 @@ exports.getIngPrice = function(ingName, callback){
                 if(len == 0)
                     callback("3")
                 else
-                    callback(results)
+                    callback(results[0])
             });
         }
         conn.release();
