@@ -4,7 +4,7 @@ const app = express();
 var manager = require('./manager.js');
 
 app.use('/se', manager.useTest);
-app.use('/heapdump', manager.heapdump);
+// app.use('/heapdump', manager.heapdump);
 
 app.use('/reqSearchRecipe', manager.reqSearchRecipe);
 app.use('/reqSearchRecipeIng', manager.reqSearchRecipeIng);

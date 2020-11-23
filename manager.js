@@ -920,140 +920,6 @@ exports.readFoodOutRecipe = function (req, res) {
     }*!/
 }*/
 
-// DB 테이블에서 재료값 가져오기
-exports.readIngPrice = function (req, res) {
-    console.log('who get in here post /readIngPrice');
-    var inputData;
-    let ingData = [];
-    let ingPrice = new Array();
-
-    req.on('data', (data) => {
-        inputData = JSON.parse(data);
-    });
-
-    // 1. 입력 받은 재료들이 DB에 있는지 확인 후
-
-    req.on('end', () => {
-        ingData = inputData.ingredient.split("`")
-        var i = 0;
-        ingData.forEach(function (e) {
-            console.log("ingData.length : " + ingData.length)
-            db.checkIngPrice(e, (results) => {
-                console.log("e : " + e)
-                if (results == "2") {
-                    res.write(results);
-                    res.end();
-                } else {
-                    db.getIngPrice(e, (results) => {
-                        if (results == "2") {
-                            res.write(results);
-                            res.end();
-                        }
-
-                            // else if(results == "3") {
-                            //     ingPrice.push("-")
-                        // }
-
-                        else if (results != "3")
-                            ingPrice.push(results)
-
-                        if (i == ingData.length - 1) {
-                            res.write(JSON.stringify(ingPrice));
-                            res.end();
-                        }
-                        i++
-                    })
-                }
-            })
-        })
-    });
-}
-
-function splitArray(results, callback) {
-    let ingArray = []
-    let setArray;
-    var i = 0;
-    var j = 0;
-    results.forEach(function(f) {
-        var temp = f.ingredient.split("`");
-        temp.forEach(function (f) {
-            ingArray[j] = f
-            j++
-        })
-
-        if(i == results.length - 1) {
-            temp = null;
-            console.log(ingArray)
-            setArray = Array.from(new Set(ingArray))
-            ingArray = null;
-            callback(setArray)
-        }
-        i++
-    })
-}
-
-function makeArray(priceArray, callback) {
-    let tempArray
-    let listArray = new Array();
-    let setArray;
-    let lastArray;
-    const LEN_MAX = 30
-    const rangeArray = Array.from({length: LEN_MAX}, () => 0);
-    var i = 0;
-    var j = 0;
-    var k = 0;
-    let rand;
-    let priceLen;
-    let returnArray = new Array()
-
-    db.getIngPriceList((results) => {
-        tempArray = results;
-        results = null;
-        tempArray.forEach(function(f) {
-            listArray.push(f.ingName)
-
-            if(i == tempArray.length - 1) {
-                tempArray = null;
-                console.log(listArray)
-                setArray = Array.from(new Set(listArray))
-                listArray = null;
-
-                setArray.forEach(function(g) {
-                    priceArray.splice(priceArray.indexOf(g), 1)
-
-                    if(j == setArray.length - 1) {
-                        priceLen = priceArray.length
-                        console.log("priceArray : " + priceArray)
-                        console.log("BeforePriceArraylength : " + priceLen)
-
-                        if(priceLen > LEN_MAX) {
-                            rangeArray.forEach(function(h) {
-                                rand = Math.floor(Math.random() * priceLen);
-                                returnArray.push(priceArray[rand])
-
-                                if(k == LEN_MAX - 1) {
-                                    lastArray = returnArray
-                                    priceLen = lastArray.length
-                                    console.log("AfterPriceArraylength : " + priceLen)
-                                    callback(lastArray)
-                                }
-                                k++
-                            })
-                        }
-                        else {
-                            lastArray = priceArray;
-                            console.log("AfterPriceArraylength : " + priceLen)
-                            callback(lastArray)
-                        }
-                    }
-                    j++;
-                })
-            }
-            i++
-        })
-    })
-}
-
 /*// junk
 exports.updateIngPriceFromOut = function (req, res) {
     console.log('who get in here post /updateIngPriceFromOut');
@@ -1186,6 +1052,94 @@ exports.updateIngPriceFromOut = function (req, res) {
     });
 }
 
+// result 값 벡틱 풀고 스트링 배열로 재구성
+function splitArray(results, callback) {
+    let ingArray = []
+    let setArray;
+    var i = 0;
+    var j = 0;
+    results.forEach(function(f) {
+        var temp = f.ingredient.split("`");
+        temp.forEach(function (f) {
+            ingArray[j] = f
+            j++
+        })
+
+        if(i == results.length - 1) {
+            temp = null;
+            console.log(ingArray)
+            setArray = Array.from(new Set(ingArray))
+            ingArray = null;
+            callback(setArray)
+        }
+        i++
+    })
+}
+
+// splitArray에서 반환된 스트링배열로 DB내에 중복된 재료와 비교하여
+// 중복값은 제외된 최종 배열로 재구성
+function makeArray(priceArray, callback) {
+    let tempArray
+    let listArray = new Array();
+    let setArray;
+    let lastArray;
+    const LEN_MAX = 30
+    const rangeArray = Array.from({length: LEN_MAX}, () => 0);
+    var i = 0;
+    var j = 0;
+    var k = 0;
+    let rand;
+    let priceLen;
+    let returnArray = new Array()
+
+    db.getIngPriceList((results) => {
+        tempArray = results;
+        results = null;
+        tempArray.forEach(function(f) {
+            listArray.push(f.ingName)
+
+            if(i == tempArray.length - 1) {
+                tempArray = null;
+                console.log(listArray)
+                setArray = Array.from(new Set(listArray))
+                listArray = null;
+
+                setArray.forEach(function(g) {
+                    priceArray.splice(priceArray.indexOf(g), 1)
+
+                    if(j == setArray.length - 1) {
+                        priceLen = priceArray.length
+                        console.log("priceArray : " + priceArray)
+                        console.log("BeforePriceArraylength : " + priceLen)
+
+                        if(priceLen > LEN_MAX) {
+                            rangeArray.forEach(function(h) {
+                                rand = Math.floor(Math.random() * priceLen);
+                                returnArray.push(priceArray[rand])
+
+                                if(k == LEN_MAX - 1) {
+                                    lastArray = returnArray
+                                    priceLen = lastArray.length
+                                    console.log("AfterPriceArraylength : " + priceLen)
+                                    callback(lastArray)
+                                }
+                                k++
+                            })
+                        }
+                        else {
+                            lastArray = priceArray;
+                            console.log("AfterPriceArraylength : " + priceLen)
+                            callback(lastArray)
+                        }
+                    }
+                    j++;
+                })
+            }
+            i++
+        })
+    })
+}
+
 // 크롤링 후 결과값인 재료값을 DB에 등록
 async function uploadIngPrice(ing, end, callback) {
     let url
@@ -1193,6 +1147,7 @@ async function uploadIngPrice(ing, end, callback) {
     let priceList = [];
     let unitList = [];
     let unitCnt = [];
+    let prodLen
     var splitedStr, price_temp;
     var unit;
     var unit_temp
@@ -1226,8 +1181,8 @@ async function uploadIngPrice(ing, end, callback) {
     await page.close()
     await browser.close()
 
-    if (product.length > SEARCH_MAX) product = product.slice(0, SEARCH_MAX)
-    console.log("length : " + product.length)
+    prodLen = product.length
+    console.log("length : " + prodLen)
     if (product.length == 0) {
         if(end == 1) {
             console.log("crawling end")
@@ -1235,75 +1190,126 @@ async function uploadIngPrice(ing, end, callback) {
         }
         else callback("-1")
     }
+    else if(prodLen < SEARCH_MAX) callback("-1")
+    else {
+        product = product.slice(0, SEARCH_MAX)
+        product.forEach(function (text) {
+            splitedStr = text.split('/')
+            price_temp = splitedStr[0].replace("원", "")
+            unit_temp = splitedStr[1]
+            priceList[i] = price_temp.replace(/,/g, "")
 
-    product.forEach(function (text) {
-        splitedStr = text.split('/')
-        price_temp = splitedStr[0].replace("원", "")
-        unit_temp = splitedStr[1]
-        priceList[i] = price_temp.replace(/,/g, "")
+            if (unitList.length == 0 && unit_temp != null) {
+                unitList[0] = unit_temp
+                unitCnt[0] = 1
+            } else {
+                var l = 0;
+                unitList.forEach(function (f) {
+                    if (f == unit_temp)
+                        unitCnt[l]++
+                    else if (unit_temp != null) {
+                        unitList[unitList.length] = unit_temp
+                        unitCnt[unitCnt.length] = 1
+                    }
+                    l++
+                })
+            }
 
-        if (unitList.length == 0 && unit_temp != null) {
-            unitList[0] = unit_temp
-            unitCnt[0] = 1
-        } else {
-            var l = 0;
-            unitList.forEach(function (f) {
-                if (f == unit_temp)
-                    unitCnt[l]++
-                else if (unit_temp != null) {
-                    unitList[unitList.length] = unit_temp
-                    unitCnt[unitCnt.length] = 1
-                }
-                l++
-            })
-        }
+            if (i == product.length - 1) {
+                var sum = Number(0);
+                for (let j = 0; j < priceList.length; j++)
+                    sum += Number(priceList[j])
+                var priceUnit_temp = sum / priceList.length
+                var intSum = parseInt(priceUnit_temp)
+                var max = [];
+                max[1] = 0;
 
-        if (i == product.length - 1) {
-            var sum = Number(0);
-            for (let j = 0; j < priceList.length; j++)
-                sum += Number(priceList[j])
-            var priceUnit_temp = sum / priceList.length
-            var intSum = parseInt(priceUnit_temp)
-            var max = [];
-            max[1] = 0;
+                var k = 0;
+                unitCnt.forEach(function (g) {
+                    if (g > max[1]) {
+                        max[1] = g
+                        max[0] = unitList[k]
+                    }
 
-            var k = 0;
-            unitCnt.forEach(function (g) {
-                if (g > max[1]) {
-                    max[1] = g
-                    max[0] = unitList[k]
-                }
-
-                if (k == unitList.length - 1) {
-                    var priceUnit = intSum + "(원)/" + max[0];
-                    console.log(ing + " : " + priceUnit)
-                    db.createIngPrice(ing, priceUnit, (results) => {
-                        console.log(results); // 1 : 재료 값 추가 성공, 2 : 실패, 3 : 이미 존재하는 재료 값
-                        if(end == 1) {
-                            console.log("crawling end")
-                            callback("2")
-                        }
-                        else {
-                            callback("1")
-                        }
-                    })
-                }
-                k++;
-            })
-        }
-        i++
-    })
-
+                    if (k == unitList.length - 1) {
+                        var priceUnit = intSum + "(원)/" + max[0];
+                        console.log(ing + " : " + priceUnit)
+                        db.createIngPrice(ing, priceUnit, (results) => {
+                            console.log(results); // 1 : 재료 값 추가 성공, 2 : 실패, 3 : 이미 존재하는 재료 값
+                            if(end == 1) {
+                                console.log("crawling end")
+                                callback("2")
+                            }
+                            else {
+                                callback("1")
+                            }
+                        })
+                    }
+                    k++;
+                })
+            }
+            i++
+        })
+    }
     // await page.waitFor(6000);
 }
 
-exports.heapdump = function (req, res, next) {
+// DB 테이블에서 재료값 가져오기
+exports.readIngPrice = function (req, res) {
+    console.log('who get in here post /readIngPrice');
+    var inputData;
+    let ingData = [];
+    let ingPrice = new Array();
+
+    req.on('data', (data) => {
+        inputData = JSON.parse(data);
+    });
+
+    // 1. 입력 받은 재료들이 DB에 있는지 확인 후
+
+    req.on('end', () => {
+        ingData = inputData.ingredient.split("`")
+        var i = 0;
+        ingData.forEach(function (e) {
+            console.log("ingData.length : " + ingData.length)
+            db.checkIngPrice(e, (results) => {
+                console.log("e : " + e)
+                if (results == "2") {
+                    res.write(results);
+                    res.end();
+                } else {
+                    db.getIngPrice(e, (results) => {
+                        if (results == "2") {
+                            res.write(results);
+                            res.end();
+                        }
+
+                            // else if(results == "3") {
+                            //     ingPrice.push("-")
+                        // }
+
+                        else if (results != "3")
+                            ingPrice.push(results)
+
+                        if (i == ingData.length - 1) {
+                            res.write(JSON.stringify(ingPrice));
+                            res.end();
+                        }
+                        i++
+                    })
+                }
+            })
+        })
+    });
+}
+
+/*exports.heapdump = function (req, res, next) {
     process.chdir('/Users')
     var filename = 'C:\\Users\\' + Date.now() + '.heapsnapshot';
     heapdump.writeSnapshot(filename);
     heapdump.write
     res.send('Heapdump has been generated in '+filename);
-}
+}*/
 
 // 내가 쓴 댓글 조회
 exports.readUserComment = function (req, res) {
