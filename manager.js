@@ -8,6 +8,7 @@ var By = require('selenium-webdriver').By;
 const chrome = require('selenium-webdriver/chrome');
 const puppeteer = require("puppeteer");
 var heapdump = require('heapdump');
+process.setMaxListeners(0)
 
 exports.useTest = function (req, res) {
     var str = db.select((results) => {
