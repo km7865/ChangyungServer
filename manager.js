@@ -728,8 +728,7 @@ exports.readIngOutRecipe = function (req, res) {
 exports.readFoodOutRecipe = function (req, res) {
     console.log('who get in here post /readFoodOutRecipe');
     var inputData;
-    const MIN_RECIPE_COUNT = 10;
-    const MAX_RECIPE_COUNT = 10;
+    const MIN_RECIPE_COUNT = 20;
 
     req.on('data', (data) => {
         inputData = JSON.parse(data);
@@ -741,6 +740,7 @@ exports.readFoodOutRecipe = function (req, res) {
 
     req.on('end', () => {
         const title = inputData.title;
+        const searchUrl = "https://www.10000recipe.com/recipe/list.html?q=" + encodeURI(title);
 
         db.searchRecipeOutList(title, (results) => {
             if (results == "2") {
@@ -766,9 +766,14 @@ exports.readFoodOutRecipe = function (req, res) {
                             res.write(JSON.stringify(recipeArr));
                             console.log("recipeArr send!");
                             res.end();
-                        } else {
-                            const searchUrl = "https://www.10000recipe.com/recipe/list.html?q=" + encodeURI(title);
 
+                            getPages(searchUrl)
+                                .then(getPageUrls)
+                                .then(checkUrls)
+                                .then(getRecipes)
+                                .then(saveRecipes)
+                                .then(() => {console.log("recipes update!")})
+                        } else {
                             // 함수 설명
                             // 1. getPages      : 검색된 레시피 결과의 개수로 크롤링할 페이지수 구하기 (1 페이지당 최대 40개의 레시피)
                             // 2. getPageUrls   : 1차(getPageUrl) - 해당 페이지에서 조건을 만족하는 레시피 url 배열(linkArr)로 반환
