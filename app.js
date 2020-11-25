@@ -4,6 +4,7 @@ const app = express();
 var manager = require('./manager.js');
 
 app.use('/se', manager.useTest);
+// app.use('/heapdump', manager.heapdump);
 
 app.use('/reqSearchRecipe', manager.reqSearchRecipe);
 app.use('/reqSearchRecipeIng', manager.reqSearchRecipeIng);
@@ -34,9 +35,9 @@ app.use('/readRecipeDetail', manager.readRecipeDetail);
 
 app.use('/readIngOutRecipe', manager.readIngOutRecipe);
 app.use('/readFoodOutRecipe', manager.readFoodOutRecipe);
-app.use('/updateIngPrice', manager.updateIngPrice);
+app.use('/updateIngPriceFromIn', manager.updateIngPriceFromIn);
+app.use('/updateIngPriceFromOut', manager.updateIngPriceFromOut);
 app.use('/readIngPrice', manager.readIngPrice);
-app.use('/updateIngPrice', manager.updateIngPrice);
 
 // app.use('/createNotification', manager.createNotification);
 app.use('/deleteNotification', manager.deleteNotification);
